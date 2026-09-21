@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kerala 3D Open World Simulator - 3D Multi-District Kerala Game</title>
+    <title>Kerala 3D Open World Simulator - Complete Edition</title>
     <!-- Three.js Engine for 3D Rendering -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -21,7 +21,8 @@
         .interactive { pointer-events: auto; }
         .lang-active { border: 2px solid #f59e0b; box-shadow: 0 0 10px #f59e0b; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
-        /* Custom scrollbar */
+        .nametag { position: absolute; color: white; background: rgba(0,0,0,0.75); padding: 4px 8px; border-radius: 6px; font-size: 11px; transform: translate(-50%, -100%); pointer-events: none; white-space: nowrap; font-weight: bold; text-align: center; border: 1px solid rgba(255,255,255,0.2); }
+        .nametag-admin { border: 1px solid #ef4444; color: #fca5a5; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 3px; }
@@ -58,7 +59,25 @@
                     <i class="fa-solid fa-user-circle text-emerald-400"></i>
                     <span id="user-badge-name" class="text-xs font-semibold">Guest</span>
                     <span id="user-badge-district" class="text-[10px] bg-emerald-900 text-emerald-200 px-1.5 py-0.5 rounded">Ernakulam</span>
+                    <span id="user-badge-money" class="text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-bold">₹ 500</span>
                 </div>
+            </div>
+        </div>
+
+        <!-- Proximity Notifications & Dynamic Bus Action Popups -->
+        <div class="flex flex-col items-center space-y-2 interactive">
+            <div id="bus-proximity-popup" class="hidden bg-slate-900/90 border-2 border-amber-500 p-4 rounded-xl shadow-2xl backdrop-blur-md text-center max-w-sm">
+                <p id="bus-near-text" class="text-xs text-amber-300 font-bold mb-2">Bus Approaching Bus Stop (Within 20m)</p>
+                <button onclick="interactWithBus()" class="bg-amber-500 hover:bg-amber-600 text-black font-bold px-6 py-2 rounded-lg text-sm shadow-lg animate-bounce">
+                    <i class="fa-solid fa-bus mr-1"></i> STOP THE BUS / BOARD BUS
+                </button>
+            </div>
+
+            <div id="player-proximity-popup" class="hidden bg-slate-900/90 border-2 border-emerald-500 p-3 rounded-xl shadow-2xl backdrop-blur-md text-center">
+                <p id="player-near-text" class="text-xs text-emerald-300 font-bold mb-1">Player Nearby</p>
+                <button id="chat-req-btn" onclick="requestPrivateChat()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-1.5 rounded-lg text-xs">
+                    Chat with <span id="target-player-name">User</span>
+                </button>
             </div>
         </div>
 
@@ -106,6 +125,14 @@
             <nav class="space-y-3">
                 <button onclick="openModal('map-modal')" class="w-full text-left bg-slate-800 hover:bg-amber-600/30 p-3 rounded-lg border border-slate-700 flex items-center justify-between">
                     <span class="flex items-center space-x-3"><i class="fa-solid fa-map text-amber-400"></i> <span data-i18n="nav_map">ജില്ലാ മാപ്പ് (Select District)</span></span>
+                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                </button>
+                <button onclick="openModal('bus-info-modal')" class="w-full text-left bg-slate-800 hover:bg-amber-600/30 p-3 rounded-lg border border-slate-700 flex items-center justify-between">
+                    <span class="flex items-center space-x-3"><i class="fa-solid fa-bus text-amber-400"></i> <span>Bus Timetable & Fare Calculator</span></span>
+                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                </button>
+                <button onclick="openModal('expenses-modal')" class="w-full text-left bg-slate-800 hover:bg-amber-600/30 p-3 rounded-lg border border-slate-700 flex items-center justify-between">
+                    <span class="flex items-center space-x-3"><i class="fa-solid fa-receipt text-amber-400"></i> <span>My Expenses & Bills</span></span>
                     <i class="fa-solid fa-chevron-right text-xs"></i>
                 </button>
                 <button onclick="openModal('admin-login-modal')" class="w-full text-left bg-red-950/40 hover:bg-red-900/60 p-3 rounded-lg border border-red-800/60 flex items-center justify-between text-red-200">
@@ -160,6 +187,20 @@
                         <label class="text-xs text-slate-400">Display Name / Username</label>
                         <input type="text" id="reg-name" placeholder="Enter your name" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white mt-1">
                     </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="text-xs text-slate-400">Gender</label>
+                            <select id="reg-gender" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-sm mt-1 text-white">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400">Age</label>
+                            <input type="number" id="reg-age" min="10" max="100" placeholder="e.g. 21" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-sm mt-1 text-white">
+                        </div>
+                    </div>
                     <div>
                         <label class="text-xs text-slate-400" data-i18n="auth_district">നിങ്ങളുടെ ജില്ല (District)</label>
                         <select id="reg-district" class="w-full bg-slate-800 border border-slate-700 rounded p-2.5 text-sm mt-1 text-white">
@@ -208,6 +249,74 @@
         </div>
     </div>
 
+    <!-- PRIVATE CHAT & REQUEST MODAL -->
+    <div id="chat-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-4 flex flex-col h-[500px]">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-800">
+                <h3 class="font-bold text-amber-400 flex items-center space-x-2">
+                    <i class="fa-solid fa-comments"></i>
+                    <span>Private Chat with <span id="chat-partner-name">User</span></span>
+                </h3>
+                <button onclick="closeModal('chat-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div id="chat-messages-container" class="flex-1 overflow-y-auto p-2 space-y-2 my-2 bg-slate-950/50 rounded-xl border border-slate-800">
+                <!-- Chat messages loaded dynamically -->
+            </div>
+
+            <form onsubmit="sendChatMessage(event)" class="flex space-x-2">
+                <input type="text" id="chat-input-text" required placeholder="Type message..." class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white outline-none">
+                <button type="submit" class="bg-amber-500 text-black font-bold px-4 py-2 rounded-lg text-xs"><i class="fa-solid fa-paper-plane"></i></button>
+            </form>
+        </div>
+    </div>
+
+    <!-- BUS TICKET PURCHASING MODAL -->
+    <div id="bus-ticket-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[95] flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-amber-500 rounded-2xl max-w-md w-full p-5 shadow-2xl">
+            <h3 class="text-xl font-bold text-amber-400 mb-3 flex items-center space-x-2">
+                <i class="fa-solid fa-ticket"></i>
+                <span>Kerala KSRTC Bus Ticket</span>
+            </h3>
+            <div class="space-y-3 bg-slate-800/60 p-3 rounded-xl border border-slate-700 text-sm">
+                <div><span class="text-slate-400">Boarding Point:</span> <span id="ticket-from" class="font-bold text-amber-300">Central Station</span></div>
+                <div>
+                    <label class="text-slate-400 text-xs">Select Destination Station/Stop:</label>
+                    <select id="ticket-to-select" onchange="calculateFare()" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-sm mt-1 text-white">
+                        <option value="Kaloor Junction" data-km="5">Kaloor Junction (5 km)</option>
+                        <option value="Edappally Station" data-km="12">Edappally Station (12 km)</option>
+                        <option value="Aluva Terminal" data-km="22">Aluva Terminal (22 km)</option>
+                    </select>
+                </div>
+                <div class="flex justify-between border-t border-slate-700 pt-2">
+                    <span class="text-slate-400">Total Distance:</span>
+                    <span id="ticket-distance" class="font-bold text-white">5 km</span>
+                </div>
+                <div class="flex justify-between font-bold text-lg text-emerald-400">
+                    <span>Fare Amount:</span>
+                    <span id="ticket-price">₹ 50</span>
+                </div>
+            </div>
+            <div class="flex space-x-3 mt-4">
+                <button onclick="confirmTicketPurchase()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl">Pay & Get Ticket</button>
+                <button onclick="closeModal('bus-ticket-modal')" class="bg-slate-700 hover:bg-slate-600 text-white font-semibold px-4 py-2.5 rounded-xl">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- USER EXPENSES & BILLS MODAL -->
+    <div id="expenses-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-lg font-bold text-amber-400 flex items-center space-x-2"><i class="fa-solid fa-wallet"></i> <span>My Expenses & Bills History</span></h3>
+                <button onclick="closeModal('expenses-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="expense-logs-list" class="flex-1 overflow-y-auto space-y-2 p-1">
+                <!-- Logs rendered here -->
+            </div>
+        </div>
+    </div>
+
     <!-- DISTRICT MAP SELECTION MODAL -->
     <div id="map-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] flex flex-col">
@@ -224,17 +333,19 @@
         </div>
     </div>
 
-    <!-- ADMIN LOGIN MODAL -->
+    <!-- ADMIN LOGIN & CONTROL MODAL -->
     <div id="admin-login-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border-2 border-red-800 rounded-2xl max-w-md w-full p-6 shadow-2xl">
-            <div class="flex justify-between items-center mb-6">
+        <div class="bg-slate-900 border-2 border-red-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold text-red-500 flex items-center space-x-2">
                     <i class="fa-solid fa-user-shield"></i>
-                    <span>Admin Control Login</span>
+                    <span>Admin Control Dashboard</span>
                 </h3>
                 <button onclick="closeModal('admin-login-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
-            <div class="space-y-4">
+
+            <!-- Login Form -->
+            <div id="admin-auth-fields" class="space-y-4">
                 <div>
                     <label class="text-xs text-slate-400">Admin Username</label>
                     <input type="text" id="admin-user-input" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm mt-1 text-white font-mono">
@@ -244,6 +355,41 @@
                     <input type="password" id="admin-pass-input" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm mt-1 text-white font-mono">
                 </div>
                 <button onclick="attemptAdminLogin()" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl shadow-lg mt-2">Login to Admin Panel</button>
+            </div>
+
+            <!-- Admin Control Tabs (Visible after authentication) -->
+            <div id="admin-panel-content" class="hidden space-y-4 border-t border-slate-800 pt-4">
+                <div class="flex bg-slate-800 p-1 rounded-xl text-xs font-bold">
+                    <button onclick="switchAdminSubTab('bus')" class="flex-1 py-1.5 rounded-lg bg-amber-500 text-black">Bus & Routes</button>
+                    <button onclick="switchAdminSubTab('players')" class="flex-1 py-1.5 rounded-lg text-slate-300">Player Details</button>
+                    <button onclick="switchAdminSubTab('chats')" class="flex-1 py-1.5 rounded-lg text-slate-300">Monitor Chats</button>
+                </div>
+
+                <!-- Bus Management -->
+                <div id="admin-tab-bus" class="space-y-3">
+                    <h4 class="font-bold text-amber-400 text-sm">Edit Bus Timetable & Route Stations</h4>
+                    <div class="space-y-2 text-xs">
+                        <input type="text" id="admin-bus-number" placeholder="Bus Number (e.g. KL-07-2026-95624)" class="w-full bg-slate-800 border border-slate-700 rounded p-2">
+                        <input type="text" id="admin-bus-start-time" placeholder="Departure Time (e.g. 07:30 AM)" class="w-full bg-slate-800 border border-slate-700 rounded p-2">
+                        <button onclick="saveAdminBusRoute()" class="w-full bg-amber-500 text-black font-bold py-2 rounded-lg">Save Bus Config</button>
+                    </div>
+                </div>
+
+                <!-- Player Details -->
+                <div id="admin-tab-players" class="hidden space-y-2">
+                    <h4 class="font-bold text-amber-400 text-sm">Registered Player Audit</h4>
+                    <div id="admin-players-list" class="space-y-2 text-xs max-h-48 overflow-y-auto">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Chat Inspector -->
+                <div id="admin-tab-chats" class="hidden space-y-2">
+                    <h4 class="font-bold text-amber-400 text-sm">Inspect Target Player Chats</h4>
+                    <input type="text" id="admin-target-username" placeholder="Type Target Username..." class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs">
+                    <button onclick="inspectTargetChats()" class="w-full bg-red-600 text-white font-bold py-1.5 rounded text-xs">Fetch Chat Logs</button>
+                    <div id="admin-chat-inspect-output" class="p-2 bg-slate-950 rounded text-xs font-mono h-32 overflow-y-auto space-y-1"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -263,7 +409,7 @@
             sendPasswordResetEmail,
             updateProfile
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyBXfF-dyRi-nRGIwLTozscpeqVQiyE2nLI",
@@ -308,7 +454,6 @@
             }
         };
 
-        // Detailed Auth Error Handler
         function handleAuthError(error) {
             console.error("Auth Exception:", error);
             if (error.code === 'auth/configuration-not-found') {
@@ -322,7 +467,6 @@
             }
         }
 
-        // Handle Email/Password Login & Signup
         window.handleEmailAuth = async (e) => {
             e.preventDefault();
             const email = document.getElementById('auth-email').value.trim();
@@ -334,16 +478,17 @@
                     window.handleUserLoginSuccess(userCredential.user);
                 } else {
                     const name = document.getElementById('reg-name').value || email.split('@')[0];
+                    const gender = document.getElementById('reg-gender').value;
+                    const age = document.getElementById('reg-age').value || "20";
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                     await updateProfile(userCredential.user, { displayName: name });
-                    window.handleUserLoginSuccess(userCredential.user);
+                    window.handleUserLoginSuccess({ ...userCredential.user, gender, age });
                 }
             } catch (error) {
                 handleAuthError(error);
             }
         };
 
-        // Handle Forgot Password
         window.handleForgotPassword = async () => {
             const email = document.getElementById('auth-email').value.trim();
             if(!email) {
@@ -358,7 +503,6 @@
             }
         };
 
-        // Google Sign-In setup
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({ prompt: 'select_account' });
 
@@ -402,10 +546,21 @@
             set(ref(db, 'players/' + window.currentUser.uid), playerData);
         };
 
+        window.saveChatMessageToFirebase = (msgObj) => {
+            push(ref(db, 'global_chats'), msgObj);
+        };
+
         onValue(ref(db, 'players'), (snapshot) => {
             const players = snapshot.val();
             if (players) {
                 window.updateMultiplayerPlayers(players);
+            }
+        });
+
+        onValue(ref(db, 'global_chats'), (snapshot) => {
+            const chats = snapshot.val();
+            if (chats && window.renderChatLogs) {
+                window.renderChatLogs(chats);
             }
         });
     </script>
@@ -420,11 +575,15 @@
         let isRunning = false;
         let micStream = null;
         let isMicLocked = false;
+        let userMoney = 500;
+        let myExpenses = [];
 
-        let scene, camera, renderer, playerMesh;
+        let scene, camera, renderer, playerMesh, busMesh;
         let otherPlayerMeshes = {};
         let moveDirection = { forward: false, backward: false, left: false, right: false };
         let playerSpeed = 0.15;
+        let busPosition = { x: 0, z: -50 };
+        let activeNearbyPlayer = null;
 
         const i18n = {
             ml: {
@@ -506,8 +665,10 @@
                 email: user.email,
                 displayName: user.displayName || username,
                 username: username,
+                gender: user.gender || "Male",
+                age: user.age || "21",
                 district: district,
-                isAdmin: (user.email === "admin@keralagame.com"),
+                isAdmin: (user.email === "admin@keralagame.com" || username === "sadam2008"),
                 isGuest: false
             };
 
@@ -517,7 +678,7 @@
             document.getElementById('auth-modal').classList.add('hidden');
 
             if (!playerMesh) {
-                createPlayerAvatar(currentUser.username, currentUser.district, currentUser.isAdmin);
+                createPlayerAvatar(currentUser.username, currentUser.district, currentUser.gender, currentUser.isAdmin);
             }
         };
 
@@ -526,6 +687,7 @@
             currentUser = {
                 uid: 'guest_' + Math.floor(Math.random()*10000),
                 username: 'Guest_Player',
+                gender: 'Male',
                 district: 'Ernakulam',
                 isAdmin: false,
                 isGuest: true
@@ -537,7 +699,7 @@
             document.getElementById('auth-modal').classList.add('hidden');
 
             if (!playerMesh) {
-                createPlayerAvatar(currentUser.username, currentUser.district, false);
+                createPlayerAvatar(currentUser.username, currentUser.district, "Male", false);
             }
         }
 
@@ -553,14 +715,30 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             container.appendChild(renderer.domElement);
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
             scene.add(ambientLight);
 
+            const sunLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            sunLight.position.set(100, 150, 50);
+            scene.add(sunLight);
+
+            // Ground & Landscape
             const groundGeo = new THREE.PlaneGeometry(1000, 1000);
             const groundMat = new THREE.MeshLambertMaterial({ color: 0x2e8b57 });
             const ground = new THREE.Mesh(groundGeo, groundMat);
             ground.rotation.x = -Math.PI / 2;
             scene.add(ground);
+
+            // Road Mesh
+            const roadGeo = new THREE.PlaneGeometry(30, 1000);
+            const roadMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
+            const road = new THREE.Mesh(roadGeo, roadMat);
+            road.rotation.x = -Math.PI / 2;
+            road.position.y = 0.01;
+            scene.add(road);
+
+            // Environment Objects: Houses, Palm Trees & Bus Stops
+            buildKeralaEnvironment();
 
             const controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
@@ -569,10 +747,61 @@
             animate();
         }
 
-        function createPlayerAvatar(username, district, isAdmin) {
+        function buildKeralaEnvironment() {
+            // Houses
+            for (let i = -200; i <= 200; i += 60) {
+                if (Math.abs(i) < 20) continue;
+                const house = createHouseMesh();
+                house.position.set(35, 0, i);
+                scene.add(house);
+
+                const palm = createPalmTreeMesh();
+                palm.position.set(-35, 0, i + 10);
+                scene.add(palm);
+            }
+
+            // Kerala Bus Stop Station
+            const busStopGeo = new THREE.BoxGeometry(8, 4, 12);
+            const busStopMat = new THREE.MeshLambertMaterial({ color: 0x94a3b8 });
+            const busStop = new THREE.Mesh(busStopGeo, busStopMat);
+            busStop.position.set(-18, 2, 0);
+            scene.add(busStop);
+
+            // Animated Bus Mesh
+            const busGeo = new THREE.BoxGeometry(6, 5, 16);
+            const busMat = new THREE.MeshLambertMaterial({ color: 0xd97706 }); // KSRTC Red-Yellow
+            busMesh = new THREE.Mesh(busGeo, busMat);
+            busMesh.position.set(0, 2.5, -200);
+            scene.add(busMesh);
+        }
+
+        function createHouseMesh() {
+            const group = new THREE.Group();
+            const base = new THREE.Mesh(new THREE.BoxGeometry(10, 6, 10), new THREE.MeshLambertMaterial({ color: 0xf8fafc }));
+            base.position.y = 3;
+            group.add(base);
+            const roof = new THREE.Mesh(new THREE.ConeGeometry(8, 4, 4), new THREE.MeshLambertMaterial({ color: 0xb91c1c }));
+            roof.position.y = 8;
+            roof.rotation.y = Math.PI / 4;
+            group.add(roof);
+            return group;
+        }
+
+        function createPalmTreeMesh() {
+            const group = new THREE.Group();
+            const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.8, 12), new THREE.MeshLambertMaterial({ color: 0x78350f }));
+            trunk.position.y = 6;
+            group.add(trunk);
+            const leaves = new THREE.Mesh(new THREE.SphereGeometry(3, 8, 8), new THREE.MeshLambertMaterial({ color: 0x15803d }));
+            leaves.position.y = 12;
+            group.add(leaves);
+            return group;
+        }
+
+        function createPlayerAvatar(username, district, gender, isAdmin) {
             const group = new THREE.Group();
             const bodyGeo = new THREE.CylinderGeometry(0.6, 0.6, 3, 16);
-            const bodyMat = new THREE.MeshLambertMaterial({ color: isAdmin ? 0xef4444 : 0x3b82f6 });
+            const bodyMat = new THREE.MeshLambertMaterial({ color: isAdmin ? 0xef4444 : (gender === 'Female' ? 0xec4899 : 0x3b82f6) });
             const body = new THREE.Mesh(bodyGeo, bodyMat);
             body.position.y = 1.5;
             group.add(body);
@@ -584,7 +813,7 @@
             group.add(head);
 
             playerMesh = group;
-            playerMesh.position.set(0, 0, 0);
+            playerMesh.position.set(5, 0, 0);
             scene.add(playerMesh);
         }
 
@@ -600,6 +829,21 @@
                 camera.position.x = playerMesh.position.x;
                 camera.position.z = playerMesh.position.z + 15;
 
+                // Move Bus
+                if (busMesh) {
+                    busMesh.position.z += 0.2;
+                    if (busMesh.position.z > 200) busMesh.position.z = -200;
+
+                    // Proximity radius checks
+                    const distToBus = playerMesh.position.distanceTo(busMesh.position);
+                    const busPopup = document.getElementById('bus-proximity-popup');
+                    if (distToBus < 20) {
+                        busPopup.classList.remove('hidden');
+                    } else {
+                        busPopup.classList.add('hidden');
+                    }
+                }
+
                 if (window.syncPlayerToFirebase) {
                     window.syncPlayerToFirebase({
                         x: playerMesh.position.x,
@@ -607,6 +851,7 @@
                         z: playerMesh.position.z,
                         username: currentUser ? currentUser.username : 'Guest',
                         district: currentUser ? currentUser.district : 'Ernakulam',
+                        gender: currentUser ? currentUser.gender : 'Male',
                         isAdmin: currentUser ? currentUser.isAdmin : false
                     });
                 }
@@ -620,14 +865,92 @@
                 const p = playersData[uid];
                 if (!otherPlayerMeshes[uid]) {
                     const group = new THREE.Group();
-                    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 3, 16), new THREE.MeshLambertMaterial({ color: 0x10b981 }));
+                    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 3, 16), new THREE.MeshLambertMaterial({ color: p.gender === 'Female' ? 0xec4899 : 0x10b981 }));
                     body.position.y = 1.5;
                     group.add(body);
                     scene.add(group);
                     otherPlayerMeshes[uid] = group;
                 }
                 otherPlayerMeshes[uid].position.set(p.x, p.y, p.z);
+
+                // Proximity distance check with other players
+                if (playerMesh) {
+                    const dist = playerMesh.position.distanceTo(otherPlayerMeshes[uid].position);
+                    const pPopup = document.getElementById('player-proximity-popup');
+                    if (dist < 8) {
+                        activeNearbyPlayer = p;
+                        document.getElementById('target-player-name').innerText = p.username;
+                        pPopup.classList.remove('hidden');
+                    }
+                }
             });
+        };
+
+        function interactWithBus() {
+            openModal('bus-ticket-modal');
+        }
+
+        function calculateFare() {
+            const select = document.getElementById('ticket-to-select');
+            const km = select.options[select.selectedIndex].getAttribute('data-km');
+            const price = km * 10;
+            document.getElementById('ticket-distance').innerText = km + " km";
+            document.getElementById('ticket-price').innerText = "₹ " + price;
+        }
+
+        function confirmTicketPurchase() {
+            const priceText = document.getElementById('ticket-price').innerText;
+            const price = parseInt(priceText.replace('₹ ', ''));
+            if (userMoney >= price) {
+                userMoney -= price;
+                document.getElementById('user-badge-money').innerText = "₹ " + userMoney;
+                const bill = { item: "KSRTC Bus Ticket", price: price, date: new Date().toLocaleTimeString() };
+                myExpenses.push(bill);
+                renderExpenseLogs();
+                alert("Ticket Purchased Successfully! Boarding Bus...");
+                closeModal('bus-ticket-modal');
+            } else {
+                alert("Insufficient Money!");
+            }
+        }
+
+        function renderExpenseLogs() {
+            const list = document.getElementById('expense-logs-list');
+            list.innerHTML = myExpenses.map(e => `
+                <div class="bg-slate-800 p-2 rounded border border-slate-700 flex justify-between text-xs">
+                    <div><span class="font-bold text-amber-300">${e.item}</span> <span class="text-slate-400">(${e.date})</span></div>
+                    <div class="text-emerald-400 font-bold">- ₹${e.price}</div>
+                </div>
+            `).join('');
+        }
+
+        function requestPrivateChat() {
+            if (!activeNearbyPlayer) return;
+            document.getElementById('chat-partner-name').innerText = activeNearbyPlayer.username;
+            openModal('chat-modal');
+        }
+
+        function sendChatMessage(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input-text');
+            if (!input.value.trim() || !currentUser) return;
+            const msgObj = {
+                sender: currentUser.username,
+                text: input.value.trim(),
+                timestamp: new Date().toLocaleTimeString()
+            };
+            if (window.saveChatMessageToFirebase) window.saveChatMessageToFirebase(msgObj);
+            input.value = "";
+        }
+
+        window.renderChatLogs = (chats) => {
+            const container = document.getElementById('chat-messages-container');
+            container.innerHTML = Object.keys(chats).map(k => {
+                const c = chats[k];
+                return `<div class="bg-slate-900 p-2 rounded text-xs border border-slate-800">
+                    <span class="font-bold text-amber-400">${c.sender}:</span> <span class="text-white">${c.text}</span>
+                </div>`;
+            }).join('');
         };
 
         function startMove(dir) { moveDirection[dir] = true; }
@@ -642,6 +965,7 @@
                 micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 document.getElementById('mic-status-label').classList.remove('hidden');
                 document.getElementById('mic-status-label').innerText = "Mic On";
+                alert("Microphone Permission Granted! Speak by holding the red button.");
             } catch (err) {
                 alert("Microphone Permission Denied");
             }
@@ -665,10 +989,17 @@
             const pass = document.getElementById('admin-pass-input').value;
             if (user === ADMIN_CREDENTIALS.user && pass === ADMIN_CREDENTIALS.pass) {
                 alert("Admin Access Granted!");
-                closeModal('admin-login-modal');
+                document.getElementById('admin-auth-fields').classList.add('hidden');
+                document.getElementById('admin-panel-content').classList.remove('hidden');
             } else {
                 alert("Invalid Admin Credentials!");
             }
+        }
+
+        function switchAdminSubTab(tab) {
+            document.getElementById('admin-tab-bus').classList.toggle('hidden', tab !== 'bus');
+            document.getElementById('admin-tab-players').classList.toggle('hidden', tab !== 'players');
+            document.getElementById('admin-tab-chats').classList.toggle('hidden', tab !== 'chats');
         }
 
         function switchDistrict(distName) {
