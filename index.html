@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ml">
 <head>
@@ -171,7 +172,7 @@
             <h3 class="text-2xl font-bold text-center text-amber-400 mb-6" data-i18n="auth_welcome">കേരള 3D ഗെയിമിലേക്ക് സ്വാഗതം</h3>
 
             <div class="space-y-4">
-                <button onclick="signInWithGoogle()" class="w-full bg-white hover:bg-slate-100 text-slate-800 font-bold py-3 rounded-xl flex items-center justify-center space-x-3 shadow-md">
+                <button id="google-signin-btn" onclick="signInWithGoogle()" class="w-full bg-white hover:bg-slate-100 text-slate-800 font-bold py-3 rounded-xl flex items-center justify-center space-x-3 shadow-md transition active:scale-95">
                     <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
                     <span data-i18n="auth_google">Google Account വഴി പ്രവേശിക്കുക</span>
                 </button>
@@ -496,7 +497,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, set, get, child, update, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         // User Provided Firebase Configuration
@@ -521,18 +522,45 @@
         window.firebaseDb = db;
         window.dbRef = ref(db);
 
-        // Expose Firebase Functions Globally
+        // Fixed Google Authentication Handler forcing account choice popup
         window.fbSignInWithGoogle = async () => {
             const provider = new GoogleAuthProvider();
+            // Force Google account picker popup every time
+            provider.setCustomParameters({
+                prompt: 'select_account'
+            });
+
             try {
                 const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-                await window.handleUserLoginSuccess(user);
+                if (result && result.user) {
+                    await window.handleUserLoginSuccess(result.user);
+                }
             } catch (error) {
-                console.error("Auth Error: ", error);
-                alert("Google Sign In failed. Please try again.");
+                console.error("Auth Error Code:", error.code, "Message:", error.message);
+                if (error.code === 'auth/popup-blocked') {
+                    // Fallback to redirect mode if popup blocked
+                    signInWithRedirect(auth, provider);
+                } else if (error.code !== 'auth/popup-closed-by-user') {
+                    alert("Google Sign In Error: " + (error.message || "Failed to launch account picker."));
+                }
             }
         };
+
+        // Handle Redirect Result if Redirect fallback was triggered
+        getRedirectResult(auth).then((result) => {
+            if (result && result.user) {
+                window.handleUserLoginSuccess(result.user);
+            }
+        }).catch((error) => {
+            console.error("Redirect auth error:", error);
+        });
+
+        // Listen for standard state changes
+        onAuthStateChanged(auth, (user) => {
+            if (user && !window.currentUser) {
+                window.handleUserLoginSuccess(user);
+            }
+        });
 
         // Sync player state with database
         window.syncPlayerToFirebase = (playerData) => {
@@ -694,13 +722,19 @@
         function signInWithGoogle() {
             if (window.fbSignInWithGoogle) {
                 window.fbSignInWithGoogle();
+            } else {
+                alert("Google Sign In is loading. Please try again in a moment.");
             }
         }
 
         async function handleUserLoginSuccess(user) {
-            const district = document.getElementById('reg-district').value;
-            const gender = document.getElementById('reg-gender').value;
-            const age = document.getElementById('reg-age').value;
+            const districtElem = document.getElementById('reg-district');
+            const genderElem = document.getElementById('reg-gender');
+            const ageElem = document.getElementById('reg-age');
+
+            const district = districtElem ? districtElem.value : 'Ernakulam';
+            const gender = genderElem ? genderElem.value : 'Male';
+            const age = ageElem ? ageElem.value : '20';
             const username = user.displayName ? user.displayName.replace(/\s+/g, '_').toLowerCase() : 'user_' + user.uid.substring(0, 5);
 
             currentUser = {
@@ -1092,3 +1126,4 @@
     </script>
 </body>
 </html>
+```
