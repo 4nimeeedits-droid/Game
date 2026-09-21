@@ -171,7 +171,7 @@
             <h3 class="text-2xl font-bold text-center text-amber-400 mb-6" data-i18n="auth_welcome">കേരള 3D ഗെയിമിലേക്ക് സ്വാഗതം</h3>
 
             <div class="space-y-4">
-                <button id="google-login-btn" onclick="signInWithGoogle()" class="w-full bg-white hover:bg-slate-100 text-slate-800 font-bold py-3 rounded-xl flex items-center justify-center space-x-3 shadow-md transition active:scale-95">
+                <button id="google-login-btn" type="button" class="w-full bg-white hover:bg-slate-100 text-slate-800 font-bold py-3 rounded-xl flex items-center justify-center space-x-3 shadow-md transition active:scale-95 cursor-pointer">
                     <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
                     <span id="google-btn-text" data-i18n="auth_google">Google Account വഴി പ്രവേശിക്കുക</span>
                 </button>
@@ -182,7 +182,7 @@
                     <div class="flex-grow border-t border-slate-700"></div>
                 </div>
 
-                <button onclick="enterAsGuest()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 rounded-xl border border-slate-600 text-sm" data-i18n="auth_guest">
+                <button type="button" onclick="enterAsGuest()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 rounded-xl border border-slate-600 text-sm cursor-pointer" data-i18n="auth_guest">
                     ഗസ്റ്റ് ആയി കാണുക (Guest Mode - Limited)
                 </button>
             </div>
@@ -495,9 +495,8 @@
     <!-- FIREBASE SDK ENGINE SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, set, get, child, update, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         // User Provided Firebase Configuration
         const firebaseConfig = {
@@ -512,50 +511,46 @@
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
         const auth = getAuth(app);
         const db = getDatabase(app);
 
         window.firebaseApp = app;
         window.firebaseAuth = auth;
         window.firebaseDb = db;
-        window.dbRef = ref(db);
 
-        // Explicit Provider Setup
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({
-            prompt: 'select_account' // Forces account chooser dialog every time
+            prompt: 'select_account'
         });
 
-        // Global Google Sign-In with Fallback mechanism
-        window.fbSignInWithGoogle = async () => {
-            const btnText = document.getElementById('google-btn-text');
-            if (btnText) btnText.innerText = "Connecting Google...";
+        // Event Listener Direct Attachment to solve button unresponsiveness
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.getElementById('google-login-btn');
+            if (btn) {
+                btn.addEventListener('click', async () => {
+                    const btnText = document.getElementById('google-btn-text');
+                    if (btnText) btnText.innerText = "Opening Google Sign-In...";
 
-            try {
-                // Try Popup Flow first
-                const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-                await window.handleUserLoginSuccess(user);
-            } catch (error) {
-                console.warn("Popup blocked or failed, switching to redirect flow: ", error);
-                // If Popup is blocked by mobile browser/security settings, fallback to redirect
-                if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
                     try {
-                        await signInWithRedirect(auth, provider);
-                    } catch (redirectErr) {
-                        console.error("Redirect Error:", redirectErr);
-                        alert("Sign-In error: " + redirectErr.message);
-                        if (btnText) btnText.innerText = "Google Account വഴി പ്രവേശിക്കുക";
+                        const result = await signInWithPopup(auth, provider);
+                        if (result && result.user) {
+                            window.handleUserLoginSuccess(result.user);
+                        }
+                    } catch (error) {
+                        console.warn("Popup blocked or failed, falling back to redirect: ", error);
+                        try {
+                            await signInWithRedirect(auth, provider);
+                        } catch (redirectErr) {
+                            console.error("Redirect Error:", redirectErr);
+                            alert("Sign-In failed: " + redirectErr.message);
+                            if (btnText) btnText.innerText = "Google Account വഴി പ്രവേശിക്കുക";
+                        }
                     }
-                } else {
-                    alert("Google Sign In failed: " + error.message);
-                    if (btnText) btnText.innerText = "Google Account വഴി പ്രവേശിക്കുക";
-                }
+                });
             }
-        };
+        });
 
-        // Check redirect login results on load
+        // Check redirect result on load
         getRedirectResult(auth).then((result) => {
             if (result && result.user) {
                 window.handleUserLoginSuccess(result.user);
@@ -564,39 +559,26 @@
             console.error("Redirect Result Error:", error);
         });
 
-        // Listen for Auth State Changes globally
+        // Listen for Auth State Changes
         onAuthStateChanged(auth, (user) => {
             if (user && !window.currentUser) {
                 window.handleUserLoginSuccess(user);
             }
         });
 
-        // Sync player state with database
+        // Firebase Realtime DB sync functions
         window.syncPlayerToFirebase = (playerData) => {
             if (!window.currentUser || window.currentUser.isGuest) return;
             set(ref(db, 'players/' + window.currentUser.uid), playerData);
         };
 
-        // Save Chat Messages to Permanent Firebase Database
         window.saveChatMessageToDb = (msgObj) => {
-            const chatRef = ref(db, 'chats');
-            push(chatRef, {
+            push(ref(db, 'chats'), {
                 ...msgObj,
                 timestamp: Date.now()
             });
         };
 
-        // Save User Expenses & Bills permanently
-        window.saveExpenseToDb = (expenseObj) => {
-            if (!window.currentUser) return;
-            const expenseRef = ref(db, 'expenses/' + window.currentUser.uid);
-            push(expenseRef, {
-                ...expenseObj,
-                timestamp: Date.now()
-            });
-        };
-
-        // Monitor Active Players for Multiplayer Sync
         onValue(ref(db, 'players'), (snapshot) => {
             const players = snapshot.val();
             if (players) {
@@ -606,7 +588,7 @@
     </script>
 
 
-    <!-- MAIN APPLICATION SCRIPT (3D Engine, Logic, Localization, UI Controls) -->
+    <!-- MAIN APPLICATION SCRIPT (3D Engine, UI & Gameplay Logic) -->
     <script>
         // GLOBAL CONSTANTS & CREDENTIALS
         const ADMIN_CREDENTIALS = {
@@ -615,7 +597,7 @@
         };
 
         // APP STATE
-        let currentLanguage = 'ml'; // Malayalam by default
+        let currentLanguage = 'ml';
         let isGuestMode = false;
         let currentUser = null;
         let activeDistrict = "Ernakulam";
@@ -628,15 +610,6 @@
         let otherPlayerMeshes = {};
         let moveDirection = { forward: false, backward: false, left: false, right: false };
         let playerSpeed = 0.15;
-        let busPosition = 0;
-
-        // KERALA BUS STOPS DEFINITION
-        const KERALA_BUS_STOPS = [
-            { name: "Vytila Mobility Hub", km: 0, x: -100, z: -50 },
-            { name: "Kaloor Junction Stop", km: 5.2, x: -50, z: -20 },
-            { name: "Edappally Toll Stop", km: 9.8, x: 10, z: 10 },
-            { name: "Aluva KSRTC Station", km: 18.5, x: 80, z: 60 }
-        ];
 
         // TRANSLATION DICTIONARY
         const i18n = {
@@ -727,16 +700,8 @@
             document.getElementById('auth-modal').classList.remove('hidden');
         }
 
-        // AUTHENTICATION HANDLERS
-        function signInWithGoogle() {
-            if (window.fbSignInWithGoogle) {
-                window.fbSignInWithGoogle();
-            } else {
-                alert("Firebase Authentication initialising... Please try again in 2 seconds.");
-            }
-        }
-
-        async function handleUserLoginSuccess(user) {
+        // AUTHENTICATION LOGIC SUCCESS CALLBACK
+        window.handleUserLoginSuccess = function(user) {
             const district = document.getElementById('reg-district').value;
             const gender = document.getElementById('reg-gender').value;
             const age = document.getElementById('reg-age').value;
@@ -759,17 +724,16 @@
             document.getElementById('user-display-badge').classList.remove('hidden');
             document.getElementById('auth-modal').classList.add('hidden');
 
-            // Add Player 3D Mesh if not added
             if (!playerMesh) {
                 createPlayerAvatar(currentUser.username, currentUser.district, currentUser.isAdmin);
             }
-        }
+        };
 
         function enterAsGuest() {
             isGuestMode = true;
             currentUser = {
                 uid: 'guest_' + Math.floor(Math.random()*10000),
-                username: 'Guest_Traveller',
+                username: 'Guest_Player',
                 district: 'Ernakulam',
                 gender: 'Male',
                 age: 20,
@@ -786,11 +750,11 @@
             }
         }
 
-        // THREE.JS 3D WORLD INITIALIZATION
+        // THREE.JS 3D WORLD
         function init3DWorld() {
             const container = document.getElementById('webgl-container');
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x87ceeb); // Sky blue
+            scene.background = new THREE.Color(0x87ceeb);
             scene.fog = new THREE.FogExp2(0x87ceeb, 0.005);
 
             camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -801,7 +765,6 @@
             renderer.shadowMap.enabled = true;
             container.appendChild(renderer.domElement);
 
-            // Lighting
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
             scene.add(ambientLight);
 
@@ -810,7 +773,6 @@
             dirLight.castShadow = true;
             scene.add(dirLight);
 
-            // Terrain / Ground (Kerala Green landscape)
             const groundGeo = new THREE.PlaneGeometry(1000, 1000);
             const groundMat = new THREE.MeshLambertMaterial({ color: 0x2e8b57 });
             const ground = new THREE.Mesh(groundGeo, groundMat);
@@ -818,24 +780,15 @@
             ground.receiveShadow = true;
             scene.add(ground);
 
-            // Roads Network
             createRoadNetwork();
-
-            // Environment: Coconut Trees & Houses
             createKeralaEnvironment();
-
-            // KSRTC Bus Creation
             createKSRTCBus();
 
-            // Controls
             const controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
-            controls.maxPolarAngle = Math.PI / 2 - 0.01;
 
             window.addEventListener('resize', onWindowResize);
-
-            // Animation Loop
             animate();
         }
 
@@ -849,20 +802,10 @@
         }
 
         function createKeralaEnvironment() {
-            // Generate Coconut Trees
-            for (let i = 0; i < 60; i++) {
+            for (let i = 0; i < 50; i++) {
                 const x = (Math.random() - 0.5) * 400;
                 const z = (Math.random() - 0.5) * 400;
-                if (Math.abs(x) > 15) { // Keep off main road
-                    createCoconutTree(x, z);
-                }
-            }
-
-            // Generate Kerala Traditional Houses
-            for (let i = 0; i < 20; i++) {
-                const x = (Math.random() > 0.5 ? 1 : -1) * (30 + Math.random() * 100);
-                const z = (Math.random() - 0.5) * 300;
-                createKeralaHouse(x, z);
+                if (Math.abs(x) > 15) createCoconutTree(x, z);
             }
         }
 
@@ -881,44 +824,13 @@
             scene.add(leaves);
         }
 
-        function createKeralaHouse(x, z) {
-            const houseGroup = new THREE.Group();
-
-            // Wall
-            const wallGeo = new THREE.BoxGeometry(8, 5, 8);
-            const wallMat = new THREE.MeshLambertMaterial({ color: 0xfff8dc });
-            const wall = new THREE.Mesh(wallGeo, wallMat);
-            wall.position.y = 2.5;
-            houseGroup.add(wall);
-
-            // Red Tiled Roof
-            const roofGeo = new THREE.ConeGeometry(7, 3, 4);
-            const roofMat = new THREE.MeshLambertMaterial({ color: 0xb22222 });
-            const roof = new THREE.Mesh(roofGeo, roofMat);
-            roof.position.y = 6.5;
-            roof.rotation.y = Math.PI / 4;
-            houseGroup.add(roof);
-
-            houseGroup.position.set(x, 0, z);
-            scene.add(houseGroup);
-        }
-
         function createKSRTCBus() {
             const busGroup = new THREE.Group();
-
-            // KSRTC Red & Yellow Body
             const bodyGeo = new THREE.BoxGeometry(4, 4, 12);
-            const bodyMat = new THREE.MeshLambertMaterial({ color: 0xcc0000 }); // Red
+            const bodyMat = new THREE.MeshLambertMaterial({ color: 0xcc0000 });
             const body = new THREE.Mesh(bodyGeo, bodyMat);
             body.position.y = 2.5;
             busGroup.add(body);
-
-            // Top Roof Yellow accent
-            const topGeo = new THREE.BoxGeometry(3.9, 0.5, 11.9);
-            const topMat = new THREE.MeshLambertMaterial({ color: 0xffcc00 }); // Yellow
-            const top = new THREE.Mesh(topGeo, topMat);
-            top.position.y = 4.6;
-            busGroup.add(top);
 
             busMesh = busGroup;
             busMesh.position.set(0, 0, -200);
@@ -927,7 +839,6 @@
 
         function createPlayerAvatar(username, district, isAdmin) {
             const group = new THREE.Group();
-
             const bodyGeo = new THREE.CylinderGeometry(0.6, 0.6, 3, 16);
             const bodyMat = new THREE.MeshLambertMaterial({ color: isAdmin ? 0xef4444 : 0x3b82f6 });
             const body = new THREE.Mesh(bodyGeo, bodyMat);
@@ -945,11 +856,9 @@
             scene.add(playerMesh);
         }
 
-        // ANIMATION LOOP
         function animate() {
             requestAnimationFrame(animate);
 
-            // Update Player Movement
             if (playerMesh) {
                 const speed = isRunning ? playerSpeed * 1.8 : playerSpeed;
                 if (moveDirection.forward) playerMesh.position.z -= speed;
@@ -957,11 +866,9 @@
                 if (moveDirection.left) playerMesh.position.x -= speed;
                 if (moveDirection.right) playerMesh.position.x += speed;
 
-                // Sync Camera behind Player
                 camera.position.x = playerMesh.position.x;
                 camera.position.z = playerMesh.position.z + 15;
 
-                // Sync Player with Firebase
                 if (window.syncPlayerToFirebase) {
                     window.syncPlayerToFirebase({
                         x: playerMesh.position.x,
@@ -974,33 +881,20 @@
                 }
             }
 
-            // KSRTC Bus Movement Logic
             if (busMesh) {
                 busMesh.position.z += 0.2;
                 if (busMesh.position.z > 200) busMesh.position.z = -200;
-
-                // Proximity Check to Bus Stop
-                if (playerMesh) {
-                    const distToBus = playerMesh.position.distanceTo(busMesh.position);
-                    if (distToBus < 20) {
-                        showStopBusPopup();
-                    } else {
-                        hideStopBusPopup();
-                    }
-                }
             }
 
             renderer.render(scene, camera);
         }
 
-        // MULTIPLAYER PLAYERS SYNCHRONIZATION
         window.updateMultiplayerPlayers = (playersData) => {
             Object.keys(playersData).forEach(uid => {
-                if (currentUser && uid === currentUser.uid) return; // Skip self
+                if (currentUser && uid === currentUser.uid) return;
 
                 const p = playersData[uid];
                 if (!otherPlayerMeshes[uid]) {
-                    // Create new remote player mesh
                     const group = new THREE.Group();
                     const bodyGeo = new THREE.CylinderGeometry(0.6, 0.6, 3, 16);
                     const bodyMat = new THREE.MeshLambertMaterial({ color: p.isAdmin ? 0xef4444 : 0x10b981 });
@@ -1018,12 +912,11 @@
                     otherPlayerMeshes[uid] = group;
                 }
 
-                // Update position
                 otherPlayerMeshes[uid].position.set(p.x, p.y, p.z);
             });
         };
 
-        // TOUCH / KEYBOARD MOVEMENT CONTROLS
+        // MOVEMENT CONTROLS
         function startMove(dir) { moveDirection[dir] = true; }
         function stopMove() { moveDirection = { forward: false, backward: false, left: false, right: false }; }
         function toggleRun() {
@@ -1031,43 +924,14 @@
             document.getElementById('run-btn').classList.toggle('bg-amber-400', isRunning);
         }
 
-        // BUS PROXIMITY POPUP
-        let stopBusPopupActive = false;
-        function showStopBusPopup() {
-            if (stopBusPopupActive) return;
-            stopBusPopupActive = true;
-            const container = document.getElementById('proximity-actions');
-            container.innerHTML = `
-                <button onclick="boardBusAction()" class="bg-amber-500 hover:bg-amber-400 text-black font-bold px-6 py-3 rounded-2xl shadow-2xl flex items-center space-x-2 border-2 border-amber-300 animate-bounce">
-                    <i class="fa-solid fa-bus text-xl"></i>
-                    <span>STOP THE BUS / ബസ്സ് നിർത്തുക</span>
-                </button>
-            `;
-        }
-
-        function hideStopBusPopup() {
-            if (!stopBusPopupActive) return;
-            stopBusPopupActive = false;
-            document.getElementById('proximity-actions').innerHTML = '';
-        }
-
-        function boardBusAction() {
-            alert("Boarding KSRTC Bus... Select destination in ticket fare window.");
-            openModal('ticket-calculator-modal');
-        }
-
-        // MIC VOICE PERMISSION & WEB AUDIO API
+        // MIC FUNCTIONS
         async function holdMicStart() {
             try {
                 micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 document.getElementById('mic-status-label').classList.remove('hidden');
-                document.getElementById('mic-status-label').innerText = "Mic Recording Live...";
-                document.getElementById('mic-hold-btn').classList.add('animate-pulse');
-
-                // Notification Pop-up on Permission Granted
-                showMicInstructionPopup();
+                document.getElementById('mic-status-label').innerText = "Mic On";
             } catch (err) {
-                alert("Microphone Permission Denied or Not Supported by Browser.");
+                alert("Microphone Permission Denied");
             }
         }
 
@@ -1075,7 +939,6 @@
             if (micStream && !isMicLocked) {
                 micStream.getTracks().forEach(track => track.stop());
                 document.getElementById('mic-status-label').classList.add('hidden');
-                document.getElementById('mic-hold-btn').classList.remove('remove-pulse');
             }
         }
 
@@ -1085,13 +948,7 @@
             if (!isMicLocked) holdMicEnd();
         }
 
-        function showMicInstructionPopup() {
-            if (window.micNoticeShown) return;
-            window.micNoticeShown = true;
-            alert("Mic Access Granted!\n\nHow to use Mic:\nHold the Red Mic Button to speak with nearby players in real-time. Release the button to mute.");
-        }
-
-        // ADMIN LOGIN & PANEL
+        // ADMIN CONTROLS
         function attemptAdminLogin() {
             const user = document.getElementById('admin-user-input').value;
             const pass = document.getElementById('admin-pass-input').value;
@@ -1101,7 +958,7 @@
                 closeModal('admin-login-modal');
                 openModal('admin-panel-modal');
             } else {
-                alert("Invalid Admin Username or Password!");
+                alert("Invalid Admin Credentials!");
             }
         }
 
@@ -1110,21 +967,18 @@
             document.getElementById(`admin-tab-${tabName}`).classList.remove('hidden');
         }
 
-        // DISTRICT SWITCHER
         function switchDistrict(distName) {
             activeDistrict = distName;
             if (currentUser) currentUser.district = distName;
             document.getElementById('user-badge-district').innerText = distName;
             closeModal('map-modal');
-            alert(`Teleporting to ${distName} District...`);
+            alert(`Teleporting to ${distName}...`);
         }
 
-        // MODAL HELPERS
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
         function toggleMenu() {
-            const menu = document.getElementById('sidebar-menu');
-            menu.classList.toggle('-translate-x-full');
+            document.getElementById('sidebar-menu').classList.toggle('-translate-x-full');
         }
 
         function onWindowResize() {
