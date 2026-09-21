@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="ml">
 <head>
@@ -172,9 +171,9 @@
             <h3 class="text-2xl font-bold text-center text-amber-400 mb-6" data-i18n="auth_welcome">കേരള 3D ഗെയിമിലേക്ക് സ്വാഗതം</h3>
 
             <div class="space-y-4">
-                <button id="google-signin-btn" onclick="signInWithGoogle()" class="w-full bg-white hover:bg-slate-100 text-slate-800 font-bold py-3 rounded-xl flex items-center justify-center space-x-3 shadow-md transition active:scale-95">
+                <button id="google-login-btn" onclick="signInWithGoogle()" class="w-full bg-white hover:bg-slate-100 text-slate-800 font-bold py-3 rounded-xl flex items-center justify-center space-x-3 shadow-md transition active:scale-95">
                     <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
-                    <span data-i18n="auth_google">Google Account വഴി പ്രവേശിക്കുക</span>
+                    <span id="google-btn-text" data-i18n="auth_google">Google Account വഴി പ്രവേശിക്കുക</span>
                 </button>
 
                 <div class="relative flex py-2 items-center">
@@ -522,40 +521,50 @@
         window.firebaseDb = db;
         window.dbRef = ref(db);
 
-        // Fixed Google Authentication Handler forcing account choice popup
+        // Explicit Provider Setup
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({
+            prompt: 'select_account' // Forces account chooser dialog every time
+        });
+
+        // Global Google Sign-In with Fallback mechanism
         window.fbSignInWithGoogle = async () => {
-            const provider = new GoogleAuthProvider();
-            // Force Google account picker popup every time
-            provider.setCustomParameters({
-                prompt: 'select_account'
-            });
+            const btnText = document.getElementById('google-btn-text');
+            if (btnText) btnText.innerText = "Connecting Google...";
 
             try {
+                // Try Popup Flow first
                 const result = await signInWithPopup(auth, provider);
-                if (result && result.user) {
-                    await window.handleUserLoginSuccess(result.user);
-                }
+                const user = result.user;
+                await window.handleUserLoginSuccess(user);
             } catch (error) {
-                console.error("Auth Error Code:", error.code, "Message:", error.message);
-                if (error.code === 'auth/popup-blocked') {
-                    // Fallback to redirect mode if popup blocked
-                    signInWithRedirect(auth, provider);
-                } else if (error.code !== 'auth/popup-closed-by-user') {
-                    alert("Google Sign In Error: " + (error.message || "Failed to launch account picker."));
+                console.warn("Popup blocked or failed, switching to redirect flow: ", error);
+                // If Popup is blocked by mobile browser/security settings, fallback to redirect
+                if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
+                    try {
+                        await signInWithRedirect(auth, provider);
+                    } catch (redirectErr) {
+                        console.error("Redirect Error:", redirectErr);
+                        alert("Sign-In error: " + redirectErr.message);
+                        if (btnText) btnText.innerText = "Google Account വഴി പ്രവേശിക്കുക";
+                    }
+                } else {
+                    alert("Google Sign In failed: " + error.message);
+                    if (btnText) btnText.innerText = "Google Account വഴി പ്രവേശിക്കുക";
                 }
             }
         };
 
-        // Handle Redirect Result if Redirect fallback was triggered
+        // Check redirect login results on load
         getRedirectResult(auth).then((result) => {
             if (result && result.user) {
                 window.handleUserLoginSuccess(result.user);
             }
         }).catch((error) => {
-            console.error("Redirect auth error:", error);
+            console.error("Redirect Result Error:", error);
         });
 
-        // Listen for standard state changes
+        // Listen for Auth State Changes globally
         onAuthStateChanged(auth, (user) => {
             if (user && !window.currentUser) {
                 window.handleUserLoginSuccess(user);
@@ -723,18 +732,14 @@
             if (window.fbSignInWithGoogle) {
                 window.fbSignInWithGoogle();
             } else {
-                alert("Google Sign In is loading. Please try again in a moment.");
+                alert("Firebase Authentication initialising... Please try again in 2 seconds.");
             }
         }
 
         async function handleUserLoginSuccess(user) {
-            const districtElem = document.getElementById('reg-district');
-            const genderElem = document.getElementById('reg-gender');
-            const ageElem = document.getElementById('reg-age');
-
-            const district = districtElem ? districtElem.value : 'Ernakulam';
-            const gender = genderElem ? genderElem.value : 'Male';
-            const age = ageElem ? ageElem.value : '20';
+            const district = document.getElementById('reg-district').value;
+            const gender = document.getElementById('reg-gender').value;
+            const age = document.getElementById('reg-age').value;
             const username = user.displayName ? user.displayName.replace(/\s+/g, '_').toLowerCase() : 'user_' + user.uid.substring(0, 5);
 
             currentUser = {
@@ -754,8 +759,10 @@
             document.getElementById('user-display-badge').classList.remove('hidden');
             document.getElementById('auth-modal').classList.add('hidden');
 
-            // Add Player 3D Mesh
-            createPlayerAvatar(currentUser.username, currentUser.district, currentUser.isAdmin);
+            // Add Player 3D Mesh if not added
+            if (!playerMesh) {
+                createPlayerAvatar(currentUser.username, currentUser.district, currentUser.isAdmin);
+            }
         }
 
         function enterAsGuest() {
@@ -774,7 +781,9 @@
             document.getElementById('user-display-badge').classList.remove('hidden');
             document.getElementById('auth-modal').classList.add('hidden');
 
-            createPlayerAvatar(currentUser.username, currentUser.district, false);
+            if (!playerMesh) {
+                createPlayerAvatar(currentUser.username, currentUser.district, false);
+            }
         }
 
         // THREE.JS 3D WORLD INITIALIZATION
@@ -1066,7 +1075,7 @@
             if (micStream && !isMicLocked) {
                 micStream.getTracks().forEach(track => track.stop());
                 document.getElementById('mic-status-label').classList.add('hidden');
-                document.getElementById('mic-hold-btn').classList.remove('animate-pulse');
+                document.getElementById('mic-hold-btn').classList.remove('remove-pulse');
             }
         }
 
@@ -1126,4 +1135,3 @@
     </script>
 </body>
 </html>
-```
