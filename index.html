@@ -77,11 +77,6 @@
                 <button onmousedown="startMove('backward')" onmouseup="stopMove()" ontouchstart="startMove('backward')" ontouchend="stopMove()" class="w-12 h-12 bg-slate-700 hover:bg-amber-600 active:bg-amber-700 rounded-full flex items-center justify-center text-lg shadow"><i class="fa-solid fa-arrow-down"></i></button>
             </div>
 
-            <!-- Proximity Action Popups Container -->
-            <div id="proximity-actions" class="interactive flex flex-col items-center space-y-2 mb-4">
-                <!-- Dynamic Popups like Chat Request, Stop Bus, etc. will mount here -->
-            </div>
-
             <!-- Mic Voice Communication Control (Right Bottom) -->
             <div class="interactive flex flex-col items-center space-y-2">
                 <div id="mic-status-label" class="text-[10px] bg-slate-800/90 px-2 py-0.5 rounded text-amber-300 hidden">Mic Off</div>
@@ -115,37 +110,11 @@
                     <span class="flex items-center space-x-3"><i class="fa-solid fa-map text-amber-400"></i> <span data-i18n="nav_map">ജില്ലാ മാപ്പ് (Select District)</span></span>
                     <i class="fa-solid fa-chevron-right text-xs"></i>
                 </button>
-
-                <button onclick="openModal('bus-routes-modal')" class="w-full text-left bg-slate-800 hover:bg-amber-600/30 p-3 rounded-lg border border-slate-700 flex items-center justify-between">
-                    <span class="flex items-center space-x-3"><i class="fa-solid fa-bus text-emerald-400"></i> <span data-i18n="nav_bus">ബസ് സമയം & റൂട്ടുകൾ</span></span>
-                    <i class="fa-solid fa-chevron-right text-xs"></i>
-                </button>
-
-                <button onclick="openModal('ticket-calculator-modal')" class="w-full text-left bg-slate-800 hover:bg-amber-600/30 p-3 rounded-lg border border-slate-700 flex items-center justify-between">
-                    <span class="flex items-center space-x-3"><i class="fa-solid fa-ticket text-blue-400"></i> <span data-i18n="nav_tickets">ബസ് ടിക്കറ്റ് നിരക്കുകൾ</span></span>
-                    <i class="fa-solid fa-chevron-right text-xs"></i>
-                </button>
-
-                <button onclick="openModal('friends-modal')" class="w-full text-left bg-slate-800 hover:bg-amber-600/30 p-3 rounded-lg border border-slate-700 flex items-center justify-between">
-                    <span class="flex items-center space-x-3"><i class="fa-solid fa-users text-purple-400"></i> <span data-i18n="nav_friends">കൂട്ടുകാർ (Friends List)</span></span>
-                    <i class="fa-solid fa-chevron-right text-xs"></i>
-                </button>
-
-                <button onclick="openModal('expenses-modal')" class="w-full text-left bg-slate-800 hover:bg-amber-600/30 p-3 rounded-lg border border-slate-700 flex items-center justify-between">
-                    <span class="flex items-center space-x-3"><i class="fa-solid fa-wallet text-yellow-400"></i> <span data-i18n="nav_expenses">ചെലവുകൾ & ബില്ലുകൾ</span></span>
-                    <i class="fa-solid fa-chevron-right text-xs"></i>
-                </button>
-
                 <button onclick="openModal('admin-login-modal')" class="w-full text-left bg-red-950/40 hover:bg-red-900/60 p-3 rounded-lg border border-red-800/60 flex items-center justify-between text-red-200">
                     <span class="flex items-center space-x-3"><i class="fa-solid fa-user-shield text-red-400"></i> <span data-i18n="nav_admin">അഡ്മിൻ ലോഗിൻ (Admin Login)</span></span>
                     <i class="fa-solid fa-lock text-xs"></i>
                 </button>
             </nav>
-        </div>
-
-        <div class="border-t border-slate-800 pt-4 flex space-x-2">
-            <button onclick="openModal('feedback-modal')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-xs py-2 rounded text-slate-300 border border-slate-700"><i class="fa-solid fa-comment-dots mr-1"></i> Feedback</button>
-            <button onclick="openModal('complaint-modal')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-xs py-2 rounded text-slate-300 border border-slate-700"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Complaint</button>
         </div>
     </div>
 
@@ -165,79 +134,79 @@
         </div>
     </div>
 
-    <!-- LOGIN / REGISTER MODAL -->
+    <!-- LOGIN / REGISTER / EMAIL AUTH MODAL -->
     <div id="auth-modal" class="fixed inset-0 bg-black/90 backdrop-blur-lg z-[90] flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl">
-            <h3 class="text-2xl font-bold text-center text-amber-400 mb-6" data-i18n="auth_welcome">കേരള 3D ഗെയിമിലേക്ക് സ്വാഗതം</h3>
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <h3 class="text-2xl font-bold text-center text-amber-400 mb-4" data-i18n="auth_welcome">കേരള 3D ഗെയിമിലേക്ക് സ്വാഗതം</h3>
 
-            <div class="space-y-4">
-                <button id="google-login-btn" type="button" class="w-full bg-white hover:bg-slate-100 text-slate-800 font-bold py-3 rounded-xl flex items-center justify-center space-x-3 shadow-md transition active:scale-95 cursor-pointer">
-                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
-                    <span id="google-btn-text" data-i18n="auth_google">Google Account വഴി പ്രവേശിക്കുക</span>
-                </button>
-
-                <div class="relative flex py-2 items-center">
-                    <div class="flex-grow border-t border-slate-700"></div>
-                    <span class="flex-shrink mx-4 text-slate-500 text-xs">OR</span>
-                    <div class="flex-grow border-t border-slate-700"></div>
-                </div>
-
-                <button type="button" onclick="enterAsGuest()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 rounded-xl border border-slate-600 text-sm cursor-pointer" data-i18n="auth_guest">
-                    ഗസ്റ്റ് ആയി കാണുക (Guest Mode - Limited)
-                </button>
+            <!-- Authentication Tabs -->
+            <div class="flex bg-slate-800 p-1 rounded-xl mb-4 border border-slate-700">
+                <button id="tab-login-btn" onclick="switchAuthTab('login')" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-amber-500 text-black transition">Login</button>
+                <button id="tab-signup-btn" onclick="switchAuthTab('signup')" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition">Sign Up</button>
             </div>
 
-            <!-- Additional Registration Info form required on first Google Sign In -->
-            <div id="extra-profile-fields" class="mt-6 border-t border-slate-800 pt-4 space-y-3">
-                <p class="text-xs text-amber-300" data-i18n="auth_extra_info">ആദ്യമായി പ്രവേശിക്കുമ്പോൾ വിവരങ്ങൾ നൽകുക:</p>
+            <!-- Email/Password Auth Form -->
+            <form id="email-auth-form" onsubmit="handleEmailAuth(event)" class="space-y-3">
                 <div>
-                    <label class="text-xs text-slate-400" data-i18n="auth_district">നിങ്ങളുടെ ജില്ല (District)</label>
-                    <select id="reg-district" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-sm mt-1">
-                        <option value="Thiruvananthapuram">Thiruvananthapuram</option>
-                        <option value="Kollam">Kollam</option>
-                        <option value="Pathanamthitta">Pathanamthitta</option>
-                        <option value="Alappuzha">Alappuzha</option>
-                        <option value="Kottayam">Kottayam</option>
-                        <option value="Idukki">Idukki</option>
-                        <option value="Ernakulam" selected>Ernakulam</option>
-                        <option value="Thrissur">Thrissur</option>
-                        <option value="Palakkad">Palakkad</option>
-                        <option value="Malappuram">Malappuram</option>
-                        <option value="Kozhikode">Kozhikode</option>
-                        <option value="Wayanad">Wayanad</option>
-                        <option value="Kannur">Kannur</option>
-                        <option value="Kasaragod">Kasaragod</option>
-                    </select>
+                    <label class="text-xs text-slate-400">Gmail / Email Address</label>
+                    <input type="email" id="auth-email" required placeholder="example@gmail.com" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white mt-1 focus:border-amber-500 outline-none">
                 </div>
-                <div class="flex space-x-2">
-                    <div class="w-1/2">
-                        <label class="text-xs text-slate-400" data-i18n="auth_gender">ലിംഗം (Gender)</label>
-                        <select id="reg-gender" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-sm mt-1">
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
+                <div>
+                    <label class="text-xs text-slate-400">Password</label>
+                    <input type="password" id="auth-password" required placeholder="••••••••" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white mt-1 focus:border-amber-500 outline-none">
+                </div>
+
+                <!-- Profile fields for Sign-up -->
+                <div id="signup-extra-fields" class="space-y-3 hidden border-t border-slate-800 pt-3">
+                    <div>
+                        <label class="text-xs text-slate-400">Display Name / Username</label>
+                        <input type="text" id="reg-name" placeholder="Enter your name" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white mt-1">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400" data-i18n="auth_district">നിങ്ങളുടെ ജില്ല (District)</label>
+                        <select id="reg-district" class="w-full bg-slate-800 border border-slate-700 rounded p-2.5 text-sm mt-1 text-white">
+                            <option value="Thiruvananthapuram">Thiruvananthapuram</option>
+                            <option value="Kollam">Kollam</option>
+                            <option value="Pathanamthitta">Pathanamthitta</option>
+                            <option value="Alappuzha">Alappuzha</option>
+                            <option value="Kottayam">Kottayam</option>
+                            <option value="Idukki">Idukki</option>
+                            <option value="Ernakulam" selected>Ernakulam</option>
+                            <option value="Thrissur">Thrissur</option>
+                            <option value="Palakkad">Palakkad</option>
+                            <option value="Malappuram">Malappuram</option>
+                            <option value="Kozhikode">Kozhikode</option>
+                            <option value="Wayanad">Wayanad</option>
+                            <option value="Kannur">Kannur</option>
+                            <option value="Kasaragod">Kasaragod</option>
                         </select>
                     </div>
-                    <div class="w-1/2">
-                        <label class="text-xs text-slate-400" data-i18n="auth_age">വയസ്സ് (Age)</label>
-                        <input type="number" id="reg-age" value="20" min="5" max="100" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-sm mt-1">
-                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- ACCOUNT SUSPENDED MODAL -->
-    <div id="suspended-modal" class="fixed inset-0 bg-red-950/95 backdrop-blur-xl z-[200] flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border-2 border-red-600 rounded-2xl max-w-md w-full p-6 text-center shadow-2xl">
-            <div class="w-20 h-20 bg-red-600/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
-                <i class="fa-solid fa-ban"></i>
+                <button type="submit" id="auth-submit-btn" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-2.5 rounded-xl shadow-md transition active:scale-95 cursor-pointer">
+                    Enter Game
+                </button>
+            </form>
+
+            <div id="forgot-pass-link" class="text-right mt-2">
+                <button type="button" onclick="handleForgotPassword()" class="text-[11px] text-amber-400 hover:underline">Forgot Password?</button>
             </div>
-            <h3 class="text-2xl font-bold text-red-500 mb-2">Account Suspended!</h3>
-            <p id="suspension-message" class="text-slate-300 text-sm mb-6 bg-slate-800/80 p-4 rounded-xl border border-red-900/50">
-                നിങ്ങളുടെ അക്കൗണ്ട് താൽക്കാലികമായി സസ്പെൻഡ് ചെയ്തിരിക്കുകയാണ്.
-            </p>
-            <div class="text-xs text-slate-500">Contact Admin for support.</div>
+
+            <div class="relative flex py-3 items-center">
+                <div class="flex-grow border-t border-slate-700"></div>
+                <span class="flex-shrink mx-4 text-slate-500 text-xs">OR</span>
+                <div class="flex-grow border-t border-slate-700"></div>
+            </div>
+
+            <!-- Google Login Button -->
+            <button id="google-login-btn" type="button" class="w-full bg-white hover:bg-slate-100 text-slate-800 font-bold py-2.5 rounded-xl flex items-center justify-center space-x-3 shadow-md transition active:scale-95 cursor-pointer">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
+                <span id="google-btn-text" data-i18n="auth_google">Google Account വഴി പ്രവേശിക്കുക</span>
+            </button>
+
+            <button type="button" onclick="enterAsGuest()" class="w-full mt-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2 rounded-xl border border-slate-600 text-sm cursor-pointer" data-i18n="auth_guest">
+                ഗസ്റ്റ് ആയി കാണുക (Guest Mode - Limited)
+            </button>
         </div>
     </div>
 
@@ -249,143 +218,10 @@
                 <button onclick="closeModal('map-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-3 overflow-y-auto p-2">
-                <!-- 14 Districts -->
-                <button onclick="switchDistrict('Thiruvananthapuram')" class="bg-slate-800 hover:bg-amber-600 border border-slate-700 rounded-xl p-3 text-left transition"><div class="font-bold">Thiruvananthapuram</div><div class="text-[10px] text-slate-400">South Zone</div></button>
-                <button onclick="switchDistrict('Kollam')" class="bg-slate-800 hover:bg-amber-600 border border-slate-700 rounded-xl p-3 text-left transition"><div class="font-bold">Kollam</div><div class="text-[10px] text-slate-400">South Zone</div></button>
-                <button onclick="switchDistrict('Pathanamthitta')" class="bg-slate-800 hover:bg-amber-600 border border-slate-700 rounded-xl p-3 text-left transition"><div class="font-bold">Pathanamthitta</div><div class="text-[10px] text-slate-400">Central South</div></button>
-                <button onclick="switchDistrict('Alappuzha')" class="bg-slate-800 hover:bg-amber-600 border border-slate-700 rounded-xl p-3 text-left transition"><div class="font-bold">Alappuzha</div><div class="text-[10px] text-slate-400">Backwaters</div></button>
-                <button onclick="switchDistrict('Kottayam')" class="bg-slate-800 hover:bg-amber-600 border border-slate-700 rounded-xl p-3 text-left transition"><div class="font-bold">Kottayam</div><div class="text-[10px] text-slate-400">Central Zone</div></button>
-                <button onclick="switchDistrict('Idukki')" class="bg-slate-800 hover:bg-amber-600 border border-slate-700 rounded-xl p-3 text-left transition"><div class="font-bold">Idukki</div><div class="text-[10px] text-slate-400">High Range</div></button>
-                <button onclick="switchDistrict('Ernakulam')" class="bg-slate-800 hover:bg-amber-600 border border-slate-700 rounded-xl p-3 text-left transition"><div class="font-bold">Ernakulam</div><div class="text-[10px] text-slate-400">Metro Hub</div></button>
-                <button onclick="switchDistrict('Thrissur')" class="bg-slate-800 hover:bg-amber-600 border border-slate-700 rounded-xl p-3 text-left transition"><div class="font-bold">Thrissur</div><div class="text-[10px] text-slate-400">Cultural Capital</div></button>
-                <button onclick="switchDistrict('Palakkad')" class="bg-slate-800 hover:bg-amber-600 border border-slate-700 rounded-xl p-3 text-left transition"><div class="font-bold">Palakkad</div><div class="text-[10px] text-slate-400">Gateway</div></button>
-                <button onclick="switchDistrict('Malappuram')" class="bg-slate-800 hover:bg-amber-600 border border-slate-700 rounded-xl p-3 text-left transition"><div class="font-bold">Malappuram</div><div class="text-[10px] text-slate-400">North Zone</div></button>
-                <button onclick="switchDistrict('Kozhikode')" class="bg-slate-800 hover:bg-amber-600 border border-slate-700 rounded-xl p-3 text-left transition"><div class="font-bold">Kozhikode</div><div class="text-[10px] text-slate-400">Malabar Hub</div></button>
-                <button onclick="switchDistrict('Wayanad')" class="bg-slate-800 hover:bg-amber-600 border border-slate-700 rounded-xl p-3 text-left transition"><div class="font-bold">Wayanad</div><div class="text-[10px] text-slate-400">Hill Station</div></button>
-                <button onclick="switchDistrict('Kannur')" class="bg-slate-800 hover:bg-amber-600 border border-slate-700 rounded-xl p-3 text-left transition"><div class="font-bold">Kannur</div><div class="text-[10px] text-slate-400">North Coast</div></button>
-                <button onclick="switchDistrict('Kasaragod')" class="bg-slate-800 hover:bg-amber-600 border border-slate-700 rounded-xl p-3 text-left transition"><div class="font-bold">Kasaragod</div><div class="text-[10px] text-slate-400">North Gateway</div></button>
-            </div>
-        </div>
-    </div>
-
-    <!-- BUS ROUTES & TIMETABLE MODAL -->
-    <div id="bus-routes-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-xl w-full p-6 max-h-[85vh] flex flex-col">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-emerald-400 flex items-center space-x-2">
-                    <i class="fa-solid fa-bus"></i> <span>KSRTC / Local Bus Timetable</span>
-                </h3>
-                <button onclick="closeModal('bus-routes-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            <div id="bus-timetable-list" class="space-y-3 overflow-y-auto pr-1">
-                <!-- Bus items dynamically populated -->
-            </div>
-        </div>
-    </div>
-
-    <!-- BUS TICKET PRICE CALCULATOR MODAL -->
-    <div id="ticket-calculator-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-blue-400">ബസ് ടിക്കറ്റ് നിരക്കുകൾ (Rates)</h3>
-                <button onclick="closeModal('ticket-calculator-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            <div class="space-y-4 text-sm">
-                <div>
-                    <label class="text-slate-400">നിങ്ങളുടെ കയറുന്ന സ്റ്റോപ്പ് (Boarding Stop)</label>
-                    <select id="ticket-from-stop" class="w-full bg-slate-800 border border-slate-700 rounded p-2.5 mt-1 text-white"></select>
-                </div>
-                <div>
-                    <label class="text-slate-400">ഇറങ്ങേണ്ട സ്റ്റോപ്പ് (Destination Stop)</label>
-                    <select id="ticket-to-stop" class="w-full bg-slate-800 border border-slate-700 rounded p-2.5 mt-1 text-white"></select>
-                </div>
-                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 flex justify-between items-center">
-                    <div>
-                        <div class="text-xs text-slate-400">ദൂരം (Distance) & ഫെയർ</div>
-                        <div id="calculated-km" class="text-xs text-amber-400 font-bold">0 KM</div>
-                    </div>
-                    <div id="calculated-fare" class="text-2xl font-bold text-emerald-400">₹0.00</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- EXPENSES & RECEIPTS HISTORY MODAL -->
-    <div id="expenses-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-yellow-400">നിങ്ങളുടെ ചെലവുകൾ (Expense Ledger)</h3>
-                <button onclick="closeModal('expenses-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            <div id="expense-logs-list" class="space-y-2 max-h-[60vh] overflow-y-auto text-sm">
-                <!-- Log bills -->
-            </div>
-        </div>
-    </div>
-
-    <!-- FRIENDS & PRIVATE CHAT MODAL -->
-    <div id="friends-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 flex flex-col h-[70vh]">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-purple-400">കൂട്ടുകാരുടെ ലിസ്റ്റ് (Friends & Chat)</h3>
-                <button onclick="closeModal('friends-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            <div id="active-chat-container" class="flex-1 flex flex-col bg-slate-950 p-3 rounded-xl border border-slate-800 overflow-hidden">
-                <div id="chat-messages-box" class="flex-1 overflow-y-auto space-y-2 mb-2 p-1 text-xs">
-                    <div class="text-center text-slate-500 py-4">ഒരു സുഹൃത്തിനോട് ചാറ്റ് ചെയ്യാൻ സന്ദേശം അയക്കുക.</div>
-                </div>
-                <div class="flex space-x-2">
-                    <input type="text" id="chat-input-text" placeholder="Type a message..." class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
-                    <button onclick="sendChatMessage()" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-xs font-bold"><i class="fa-solid fa-paper-plane"></i></button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- FEEDBACK & COMPLAINT MODAL -->
-    <div id="feedback-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-slate-200">Feedback / അഭിപ്രായം</h3>
-                <button onclick="closeModal('feedback-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            <textarea id="feedback-text" rows="4" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white mb-4" placeholder="നിങ്ങളുടെ അഭിപ്രായം ഇവിടെ രേഖപ്പെടുത്തുക..."></textarea>
-            <button onclick="submitFeedback()" class="w-full bg-amber-500 text-black font-bold py-2.5 rounded-xl">സബ്മിറ്റ് ചെയ്യുക</button>
-        </div>
-    </div>
-
-    <div id="complaint-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-red-400">Complaint / പരാതി</h3>
-                <button onclick="closeModal('complaint-modal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            <select id="complaint-type" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-sm text-white mb-3">
-                <option value="Abuse">മോശം പെരുമാറ്റം (Abuse)</option>
-                <option value="Bug">ഗെയിം ബഗ്ഗ് (Game Bug)</option>
-                <option value="Other">മറ്റുള്ളവ (Other)</option>
-            </select>
-            <textarea id="complaint-text" rows="4" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm text-white mb-4" placeholder="പരാതിയുടെ വിശദാംശങ്ങൾ എഴുതുക..."></textarea>
-            <button onclick="submitComplaint()" class="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-2.5 rounded-xl">പരാതി അയക്കുക</button>
-        </div>
-    </div>
-
-    <!-- REPORT PLAYER MODAL -->
-    <div id="report-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[80] flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6">
-            <h3 class="text-xl font-bold text-red-500 mb-2">Report Player: <span id="report-target-username">--</span></h3>
-            <div class="space-y-3 mb-4">
-                <label class="text-xs text-slate-400">കാരണം തിരഞ്ഞെടുക്കുക (Select Reason)</label>
-                <select id="report-reason" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white">
-                    <option value="Inappropriate Language">Inappropriate Language / Abusive Mic</option>
-                    <option value="Harassment">Harassment</option>
-                    <option value="Cheating">Cheating / Glitch Abuse</option>
-                </select>
-                <textarea id="report-details" rows="3" placeholder="Additional details..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-sm text-white"></textarea>
-            </div>
-            <div class="flex space-x-2">
-                <button onclick="closeModal('report-modal')" class="flex-1 bg-slate-800 py-2 rounded-lg text-sm">Cancel</button>
-                <button onclick="confirmReportPlayer()" class="flex-1 bg-red-600 hover:bg-red-500 py-2 rounded-lg text-sm font-bold">Submit Report</button>
+                <button onclick="switchDistrict('Thiruvananthapuram')" class="bg-slate-800 hover:bg-amber-600 border border-slate-700 rounded-xl p-3 text-left transition"><div class="font-bold">Thiruvananthapuram</div></button>
+                <button onclick="switchDistrict('Kollam')" class="bg-slate-800 hover:bg-amber-600 border border-slate-700 rounded-xl p-3 text-left transition"><div class="font-bold">Kollam</div></button>
+                <button onclick="switchDistrict('Ernakulam')" class="bg-slate-800 hover:bg-amber-600 border border-slate-700 rounded-xl p-3 text-left transition"><div class="font-bold">Ernakulam</div></button>
+                <button onclick="switchDistrict('Kozhikode')" class="bg-slate-800 hover:bg-amber-600 border border-slate-700 rounded-xl p-3 text-left transition"><div class="font-bold">Kozhikode</div></button>
             </div>
         </div>
     </div>
@@ -414,91 +250,23 @@
         </div>
     </div>
 
-    <!-- MAIN ADMIN DASHBOARD PANEL MODAL -->
-    <div id="admin-panel-modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-xl z-[120] p-6 hidden overflow-y-auto">
-        <div class="max-w-6xl mx-auto">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-4 mb-6">
-                <div class="flex items-center space-x-3">
-                    <span class="bg-red-600 text-white px-3 py-1 rounded text-xs font-bold">ADMIN MODE</span>
-                    <h2 class="text-2xl font-bold text-slate-100">Kerala Game Admin Control Center</h2>
-                </div>
-                <button onclick="closeModal('admin-panel-modal')" class="bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm"><i class="fa-solid fa-xmark mr-1"></i> Exit Admin Panel</button>
-            </div>
-
-            <!-- Admin Tabs Navigation -->
-            <div class="flex space-x-2 border-b border-slate-800 pb-3 mb-6">
-                <button onclick="switchAdminTab('buses')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm font-bold text-amber-400">Bus Management & Routes</button>
-                <button onclick="switchAdminTab('players')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm font-bold text-blue-400">Player Inspector & Suspend</button>
-                <button onclick="switchAdminTab('chats')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm font-bold text-purple-400">Live Chat Inspector</button>
-                <button onclick="switchAdminTab('reports')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm font-bold text-red-400">Reports & Complaints</button>
-            </div>
-
-            <!-- TAB 1: BUS MANAGEMENT -->
-            <div id="admin-tab-buses" class="admin-tab-content space-y-6">
-                <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800">
-                    <h4 class="font-bold text-lg mb-4 text-emerald-400">Edit / Add Bus Schedule & Route</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                        <div>
-                            <label class="text-xs text-slate-400">Bus Number Plate</label>
-                            <input type="text" id="admin-bus-plate" value="KL-20-3029" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-sm text-white font-mono">
-                        </div>
-                        <div>
-                            <label class="text-xs text-slate-400">Big Station Start Time</label>
-                            <input type="time" id="admin-bus-time" value="08:00" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-sm text-white">
-                        </div>
-                        <div>
-                            <label class="text-xs text-slate-400">Ticket Fare Rate (Per KM)</label>
-                            <input type="number" id="admin-bus-rate" value="2.5" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-sm text-white">
-                        </div>
-                        <div class="flex items-end">
-                            <button onclick="saveAdminBusConfig()" class="w-full bg-emerald-600 hover:bg-emerald-500 font-bold py-2 rounded text-sm"><i class="fa-solid fa-save mr-1"></i> Save Bus Route</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB 2: PLAYER INSPECTOR -->
-            <div id="admin-tab-players" class="admin-tab-content hidden space-y-6">
-                <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800">
-                    <h4 class="font-bold text-lg mb-4 text-blue-400">Registered Players Directory</h4>
-                    <div id="admin-player-list-table" class="space-y-2 max-h-[50vh] overflow-y-auto">
-                        <!-- Populated dynamically -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB 3: CHAT INSPECTOR -->
-            <div id="admin-tab-chats" class="admin-tab-content hidden space-y-6">
-                <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800">
-                    <h4 class="font-bold text-lg mb-4 text-purple-400">Global & Private Chat Log Inspector</h4>
-                    <input type="text" id="admin-chat-search" placeholder="Search by Username..." class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm mb-4 text-white">
-                    <div id="admin-chat-history-box" class="bg-slate-950 p-4 rounded-xl border border-slate-800 max-h-[40vh] overflow-y-auto space-y-2 text-xs font-mono">
-                        <!-- Chat history list -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB 4: REPORTS & SUSPENSIONS -->
-            <div id="admin-tab-reports" class="admin-tab-content hidden space-y-6">
-                <div class="bg-slate-900 p-5 rounded-2xl border border-slate-800">
-                    <h4 class="font-bold text-lg mb-4 text-red-400">Received Player Reports & Feedback</h4>
-                    <div id="admin-reports-list" class="space-y-3">
-                        <!-- Dynamic report list -->
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-
-    <!-- FIREBASE SDK ENGINE SCRIPT -->
+    <!-- FIREBASE ENGINE SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { 
+            getAuth, 
+            GoogleAuthProvider, 
+            signInWithPopup, 
+            signInWithRedirect, 
+            getRedirectResult, 
+            onAuthStateChanged,
+            signInWithEmailAndPassword,
+            createUserWithEmailAndPassword,
+            sendPasswordResetEmail,
+            updateProfile
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // User Provided Firebase Configuration
         const firebaseConfig = {
           apiKey: "AIzaSyBXfF-dyRi-nRGIwLTozscpeqVQiyE2nLI",
           authDomain: "onam2026-a3810.firebaseapp.com",
@@ -509,7 +277,6 @@
           measurementId: "G-F6L6B6MMJY"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
@@ -518,31 +285,87 @@
         window.firebaseAuth = auth;
         window.firebaseDb = db;
 
-        const provider = new GoogleAuthProvider();
-        provider.setCustomParameters({
-            prompt: 'select_account'
-        });
+        let authMode = 'login'; // 'login' or 'signup'
 
-        // Event Listener Direct Attachment to solve button unresponsiveness
+        window.switchAuthTab = (mode) => {
+            authMode = mode;
+            const loginBtn = document.getElementById('tab-login-btn');
+            const signupBtn = document.getElementById('tab-signup-btn');
+            const extraFields = document.getElementById('signup-extra-fields');
+            const submitBtn = document.getElementById('auth-submit-btn');
+            const forgotLink = document.getElementById('forgot-pass-link');
+
+            if(mode === 'login') {
+                loginBtn.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-amber-500 text-black transition";
+                signupBtn.className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition";
+                extraFields.classList.add('hidden');
+                submitBtn.innerText = "Login";
+                forgotLink.classList.remove('hidden');
+            } else {
+                signupBtn.className = "flex-1 py-1.5 text-xs font-bold rounded-lg bg-amber-500 text-black transition";
+                loginBtn.className = "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition";
+                extraFields.classList.remove('hidden');
+                submitBtn.innerText = "Create Account";
+                forgotLink.classList.add('hidden');
+            }
+        };
+
+        // Handle Email/Password Login & Signup
+        window.handleEmailAuth = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+
+            try {
+                if(authMode === 'login') {
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    window.handleUserLoginSuccess(userCredential.user);
+                } else {
+                    const name = document.getElementById('reg-name').value || email.split('@')[0];
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    await updateProfile(userCredential.user, { displayName: name });
+                    window.handleUserLoginSuccess(userCredential.user);
+                }
+            } catch (error) {
+                alert("Auth Error: " + error.message);
+            }
+        };
+
+        // Handle Forgot Password
+        window.handleForgotPassword = async () => {
+            const email = document.getElementById('auth-email').value;
+            if(!email) {
+                alert("Please enter your Gmail address first.");
+                return;
+            }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert("Password reset link sent to " + email);
+            } catch (error) {
+                alert("Error sending reset email: " + error.message);
+            }
+        };
+
+        // Google Sign-In setup
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+
         document.addEventListener('DOMContentLoaded', () => {
             const btn = document.getElementById('google-login-btn');
             if (btn) {
                 btn.addEventListener('click', async () => {
                     const btnText = document.getElementById('google-btn-text');
-                    if (btnText) btnText.innerText = "Opening Google Sign-In...";
-
+                    if (btnText) btnText.innerText = "Connecting Google...";
                     try {
                         const result = await signInWithPopup(auth, provider);
                         if (result && result.user) {
                             window.handleUserLoginSuccess(result.user);
                         }
                     } catch (error) {
-                        console.warn("Popup blocked or failed, falling back to redirect: ", error);
                         try {
                             await signInWithRedirect(auth, provider);
                         } catch (redirectErr) {
-                            console.error("Redirect Error:", redirectErr);
-                            alert("Sign-In failed: " + redirectErr.message);
+                            alert("Google Sign-In failed: " + redirectErr.message);
                             if (btnText) btnText.innerText = "Google Account വഴി പ്രവേശിക്കുക";
                         }
                     }
@@ -550,33 +373,21 @@
             }
         });
 
-        // Check redirect result on load
         getRedirectResult(auth).then((result) => {
             if (result && result.user) {
                 window.handleUserLoginSuccess(result.user);
             }
-        }).catch((error) => {
-            console.error("Redirect Result Error:", error);
         });
 
-        // Listen for Auth State Changes
         onAuthStateChanged(auth, (user) => {
             if (user && !window.currentUser) {
                 window.handleUserLoginSuccess(user);
             }
         });
 
-        // Firebase Realtime DB sync functions
         window.syncPlayerToFirebase = (playerData) => {
             if (!window.currentUser || window.currentUser.isGuest) return;
             set(ref(db, 'players/' + window.currentUser.uid), playerData);
-        };
-
-        window.saveChatMessageToDb = (msgObj) => {
-            push(ref(db, 'chats'), {
-                ...msgObj,
-                timestamp: Date.now()
-            });
         };
 
         onValue(ref(db, 'players'), (snapshot) => {
@@ -587,16 +398,9 @@
         });
     </script>
 
-
-    <!-- MAIN APPLICATION SCRIPT (3D Engine, UI & Gameplay Logic) -->
+    <!-- MAIN APPLICATION SCRIPT -->
     <script>
-        // GLOBAL CONSTANTS & CREDENTIALS
-        const ADMIN_CREDENTIALS = {
-            user: "SADAM2008",
-            pass: "95624562"
-        };
-
-        // APP STATE
+        const ADMIN_CREDENTIALS = { user: "SADAM2008", pass: "95624562" };
         let currentLanguage = 'ml';
         let isGuestMode = false;
         let currentUser = null;
@@ -605,21 +409,15 @@
         let micStream = null;
         let isMicLocked = false;
 
-        // THREE.JS 3D WORLD VARIABLES
         let scene, camera, renderer, playerMesh, busMesh;
         let otherPlayerMeshes = {};
         let moveDirection = { forward: false, backward: false, left: false, right: false };
         let playerSpeed = 0.15;
 
-        // TRANSLATION DICTIONARY
         const i18n = {
             ml: {
                 menu_title: "കേരള ഗെയിം മെനു",
                 nav_map: "ജില്ലാ മാപ്പ് (Select District)",
-                nav_bus: "ബസ് സമയം & റൂട്ടുകൾ",
-                nav_tickets: "ബസ് ടിക്കറ്റ് നിരക്കുകൾ",
-                nav_friends: "കൂട്ടുകാർ (Friends List)",
-                nav_expenses: "ചെലവുകൾ & ബില്ലുകൾ",
                 nav_admin: "അഡ്മിൻ ലോഗിൻ (Admin Login)",
                 rules_title: "ഗെയിം പെരുമാറ്റച്ചട്ടങ്ങൾ (Respect Rules)",
                 rules_1: "1. എല്ലാവരോടും, പ്രത്യേകിച്ച് സ്ത്രീകളോട് ബഹുമാനം പുലർത്തുക.",
@@ -629,19 +427,12 @@
                 auth_welcome: "കേരള 3D ഗെയിമിലേക്ക് സ്വാഗതം",
                 auth_google: "Google Account വഴി പ്രവേശിക്കുക",
                 auth_guest: "ഗസ്റ്റ് ആയി കാണുക (Guest Mode - Limited)",
-                auth_extra_info: "ആദ്യമായി പ്രവേശിക്കുമ്പോൾ വിവരങ്ങൾ നൽകുക:",
                 auth_district: "നിങ്ങളുടെ ജില്ല (District)",
-                auth_gender: "ലിംഗം (Gender)",
-                auth_age: "വയസ്സ് (Age)",
                 map_select: "കേരളത്തിലെ ജില്ല തിരഞ്ഞെടുക്കുക"
             },
             en: {
                 menu_title: "Kerala Game Menu",
                 nav_map: "District Map Selector",
-                nav_bus: "Bus Routes & Timetable",
-                nav_tickets: "Bus Fare Calculator",
-                nav_friends: "Friends & Chat",
-                nav_expenses: "Expenses & Receipts",
                 nav_admin: "Admin Control Login",
                 rules_title: "Game Conduct & Rules",
                 rules_1: "1. Respect everyone, especially women.",
@@ -651,22 +442,17 @@
                 auth_welcome: "Welcome to Kerala 3D Game",
                 auth_google: "Sign in with Google Account",
                 auth_guest: "Continue as Guest (Limited Access)",
-                auth_extra_info: "Please fill details on first login:",
                 auth_district: "Your District",
-                auth_gender: "Gender",
-                auth_age: "Age",
                 map_select: "Select Kerala District"
             }
         };
 
-        // INITIALIZATION
         window.addEventListener('DOMContentLoaded', () => {
             initClock();
             init3DWorld();
             updateLanguageUI();
         });
 
-        // IST CLOCK
         function initClock() {
             setInterval(() => {
                 const now = new Date();
@@ -675,7 +461,6 @@
             }, 1000);
         }
 
-        // LANGUAGE SWITCHER
         function setLanguage(lang) {
             currentLanguage = lang;
             document.getElementById('lang-ml').classList.toggle('lang-active', lang === 'ml');
@@ -694,17 +479,14 @@
             });
         }
 
-        // RESPECT RULES ACCEPTANCE
         function acceptRules() {
             document.getElementById('respect-rules-modal').classList.add('hidden');
             document.getElementById('auth-modal').classList.remove('hidden');
         }
 
-        // AUTHENTICATION LOGIC SUCCESS CALLBACK
         window.handleUserLoginSuccess = function(user) {
-            const district = document.getElementById('reg-district').value;
-            const gender = document.getElementById('reg-gender').value;
-            const age = document.getElementById('reg-age').value;
+            const districtElem = document.getElementById('reg-district');
+            const district = districtElem ? districtElem.value : 'Ernakulam';
             const username = user.displayName ? user.displayName.replace(/\s+/g, '_').toLowerCase() : 'user_' + user.uid.substring(0, 5);
 
             currentUser = {
@@ -713,8 +495,6 @@
                 displayName: user.displayName || username,
                 username: username,
                 district: district,
-                gender: gender,
-                age: age,
                 isAdmin: (user.email === "admin@keralagame.com"),
                 isGuest: false
             };
@@ -735,8 +515,7 @@
                 uid: 'guest_' + Math.floor(Math.random()*10000),
                 username: 'Guest_Player',
                 district: 'Ernakulam',
-                gender: 'Male',
-                age: 20,
+                isAdmin: false,
                 isGuest: true
             };
 
@@ -750,91 +529,32 @@
             }
         }
 
-        // THREE.JS 3D WORLD
         function init3DWorld() {
             const container = document.getElementById('webgl-container');
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x87ceeb);
-            scene.fog = new THREE.FogExp2(0x87ceeb, 0.005);
 
             camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.set(0, 15, 25);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.shadowMap.enabled = true;
             container.appendChild(renderer.domElement);
 
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
             scene.add(ambientLight);
 
-            const dirLight = new THREE.DirectionalLight(0xfffaed, 0.8);
-            dirLight.position.set(100, 150, 50);
-            dirLight.castShadow = true;
-            scene.add(dirLight);
-
             const groundGeo = new THREE.PlaneGeometry(1000, 1000);
             const groundMat = new THREE.MeshLambertMaterial({ color: 0x2e8b57 });
             const ground = new THREE.Mesh(groundGeo, groundMat);
             ground.rotation.x = -Math.PI / 2;
-            ground.receiveShadow = true;
             scene.add(ground);
-
-            createRoadNetwork();
-            createKeralaEnvironment();
-            createKSRTCBus();
 
             const controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
-            controls.dampingFactor = 0.05;
 
             window.addEventListener('resize', onWindowResize);
             animate();
-        }
-
-        function createRoadNetwork() {
-            const roadMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
-            const roadGeo = new THREE.PlaneGeometry(20, 1000);
-            const road = new THREE.Mesh(roadGeo, roadMat);
-            road.rotation.x = -Math.PI / 2;
-            road.position.y = 0.01;
-            scene.add(road);
-        }
-
-        function createKeralaEnvironment() {
-            for (let i = 0; i < 50; i++) {
-                const x = (Math.random() - 0.5) * 400;
-                const z = (Math.random() - 0.5) * 400;
-                if (Math.abs(x) > 15) createCoconutTree(x, z);
-            }
-        }
-
-        function createCoconutTree(x, z) {
-            const trunkGeo = new THREE.CylinderGeometry(0.3, 0.5, 8, 8);
-            const trunkMat = new THREE.MeshLambertMaterial({ color: 0x8b5a2b });
-            const trunk = new THREE.Mesh(trunkGeo, trunkMat);
-            trunk.position.set(x, 4, z);
-
-            const leavesGeo = new THREE.ConeGeometry(4, 3, 6);
-            const leavesMat = new THREE.MeshLambertMaterial({ color: 0x006400 });
-            const leaves = new THREE.Mesh(leavesGeo, leavesMat);
-            leaves.position.set(x, 8, z);
-
-            scene.add(trunk);
-            scene.add(leaves);
-        }
-
-        function createKSRTCBus() {
-            const busGroup = new THREE.Group();
-            const bodyGeo = new THREE.BoxGeometry(4, 4, 12);
-            const bodyMat = new THREE.MeshLambertMaterial({ color: 0xcc0000 });
-            const body = new THREE.Mesh(bodyGeo, bodyMat);
-            body.position.y = 2.5;
-            busGroup.add(body);
-
-            busMesh = busGroup;
-            busMesh.position.set(0, 0, -200);
-            scene.add(busMesh);
         }
 
         function createPlayerAvatar(username, district, isAdmin) {
@@ -858,7 +578,6 @@
 
         function animate() {
             requestAnimationFrame(animate);
-
             if (playerMesh) {
                 const speed = isRunning ? playerSpeed * 1.8 : playerSpeed;
                 if (moveDirection.forward) playerMesh.position.z -= speed;
@@ -880,43 +599,25 @@
                     });
                 }
             }
-
-            if (busMesh) {
-                busMesh.position.z += 0.2;
-                if (busMesh.position.z > 200) busMesh.position.z = -200;
-            }
-
             renderer.render(scene, camera);
         }
 
         window.updateMultiplayerPlayers = (playersData) => {
             Object.keys(playersData).forEach(uid => {
                 if (currentUser && uid === currentUser.uid) return;
-
                 const p = playersData[uid];
                 if (!otherPlayerMeshes[uid]) {
                     const group = new THREE.Group();
-                    const bodyGeo = new THREE.CylinderGeometry(0.6, 0.6, 3, 16);
-                    const bodyMat = new THREE.MeshLambertMaterial({ color: p.isAdmin ? 0xef4444 : 0x10b981 });
-                    const body = new THREE.Mesh(bodyGeo, bodyMat);
+                    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 3, 16), new THREE.MeshLambertMaterial({ color: 0x10b981 }));
                     body.position.y = 1.5;
                     group.add(body);
-
-                    const headGeo = new THREE.SphereGeometry(0.6, 16, 16);
-                    const headMat = new THREE.MeshLambertMaterial({ color: 0xffdbac });
-                    const head = new THREE.Mesh(headGeo, headMat);
-                    head.position.y = 3.3;
-                    group.add(head);
-
                     scene.add(group);
                     otherPlayerMeshes[uid] = group;
                 }
-
                 otherPlayerMeshes[uid].position.set(p.x, p.y, p.z);
             });
         };
 
-        // MOVEMENT CONTROLS
         function startMove(dir) { moveDirection[dir] = true; }
         function stopMove() { moveDirection = { forward: false, backward: false, left: false, right: false }; }
         function toggleRun() {
@@ -924,7 +625,6 @@
             document.getElementById('run-btn').classList.toggle('bg-amber-400', isRunning);
         }
 
-        // MIC FUNCTIONS
         async function holdMicStart() {
             try {
                 micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -948,23 +648,15 @@
             if (!isMicLocked) holdMicEnd();
         }
 
-        // ADMIN CONTROLS
         function attemptAdminLogin() {
             const user = document.getElementById('admin-user-input').value;
             const pass = document.getElementById('admin-pass-input').value;
-
             if (user === ADMIN_CREDENTIALS.user && pass === ADMIN_CREDENTIALS.pass) {
                 alert("Admin Access Granted!");
                 closeModal('admin-login-modal');
-                openModal('admin-panel-modal');
             } else {
                 alert("Invalid Admin Credentials!");
             }
-        }
-
-        function switchAdminTab(tabName) {
-            document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`admin-tab-${tabName}`).classList.remove('hidden');
         }
 
         function switchDistrict(distName) {
@@ -972,14 +664,11 @@
             if (currentUser) currentUser.district = distName;
             document.getElementById('user-badge-district').innerText = distName;
             closeModal('map-modal');
-            alert(`Teleporting to ${distName}...`);
         }
 
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        function toggleMenu() {
-            document.getElementById('sidebar-menu').classList.toggle('-translate-x-full');
-        }
+        function toggleMenu() { document.getElementById('sidebar-menu').classList.toggle('-translate-x-full'); }
 
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
