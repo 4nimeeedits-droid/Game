@@ -21,8 +21,6 @@
         .interactive { pointer-events: auto; }
         .lang-active { border: 2px solid #f59e0b; box-shadow: 0 0 10px #f59e0b; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
-        .nametag { position: absolute; color: white; background: rgba(0,0,0,0.7); padding: 4px 8px; border-radius: 4px; font-size: 12px; transform: translate(-50%, -100%); pointer-events: none; white-space: nowrap; font-weight: bold; }
-        .nametag-admin { border: 1px solid #ef4444; color: #fca5a5; }
         /* Custom scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
@@ -265,7 +263,7 @@
             sendPasswordResetEmail,
             updateProfile
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyBXfF-dyRi-nRGIwLTozscpeqVQiyE2nLI",
@@ -285,7 +283,7 @@
         window.firebaseAuth = auth;
         window.firebaseDb = db;
 
-        let authMode = 'login'; // 'login' or 'signup'
+        let authMode = 'login';
 
         window.switchAuthTab = (mode) => {
             authMode = mode;
@@ -310,10 +308,24 @@
             }
         };
 
+        // Detailed Auth Error Handler
+        function handleAuthError(error) {
+            console.error("Auth Exception:", error);
+            if (error.code === 'auth/configuration-not-found') {
+                alert("Firebase Auth Error: Please enable Email/Password & Google Sign-In inside your Firebase Console -> Authentication -> Sign-in Method tab.");
+            } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                alert("Incorrect Email or Password. Please check or Sign Up first.");
+            } else if (error.code === 'auth/email-already-in-use') {
+                alert("This email is already registered! Switch to Login tab.");
+            } else {
+                alert("Auth Error: " + (error.message || error.code));
+            }
+        }
+
         // Handle Email/Password Login & Signup
         window.handleEmailAuth = async (e) => {
             e.preventDefault();
-            const email = document.getElementById('auth-email').value;
+            const email = document.getElementById('auth-email').value.trim();
             const password = document.getElementById('auth-password').value;
 
             try {
@@ -327,13 +339,13 @@
                     window.handleUserLoginSuccess(userCredential.user);
                 }
             } catch (error) {
-                alert("Auth Error: " + error.message);
+                handleAuthError(error);
             }
         };
 
         // Handle Forgot Password
         window.handleForgotPassword = async () => {
-            const email = document.getElementById('auth-email').value;
+            const email = document.getElementById('auth-email').value.trim();
             if(!email) {
                 alert("Please enter your Gmail address first.");
                 return;
@@ -342,7 +354,7 @@
                 await sendPasswordResetEmail(auth, email);
                 alert("Password reset link sent to " + email);
             } catch (error) {
-                alert("Error sending reset email: " + error.message);
+                handleAuthError(error);
             }
         };
 
@@ -365,7 +377,7 @@
                         try {
                             await signInWithRedirect(auth, provider);
                         } catch (redirectErr) {
-                            alert("Google Sign-In failed: " + redirectErr.message);
+                            handleAuthError(redirectErr);
                             if (btnText) btnText.innerText = "Google Account വഴി പ്രവേശിക്കുക";
                         }
                     }
@@ -377,7 +389,7 @@
             if (result && result.user) {
                 window.handleUserLoginSuccess(result.user);
             }
-        });
+        }).catch(handleAuthError);
 
         onAuthStateChanged(auth, (user) => {
             if (user && !window.currentUser) {
@@ -409,7 +421,7 @@
         let micStream = null;
         let isMicLocked = false;
 
-        let scene, camera, renderer, playerMesh, busMesh;
+        let scene, camera, renderer, playerMesh;
         let otherPlayerMeshes = {};
         let moveDirection = { forward: false, backward: false, left: false, right: false };
         let playerSpeed = 0.15;
